@@ -1,4 +1,4 @@
-# Communication-Automation
+# Automation-Utils
 
 > **End-to-end automation suite for UEMS Agent testing** — traffic interception, GUI validation, registry operations, API testing, and AI-assisted analysis — all driven by JSON test definitions.
 
