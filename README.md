@@ -1,4 +1,4 @@
-# Communication-Automation
+# Automation-Utils
 
 > **End-to-end automation suite for UEMS Agent testing** — traffic interception, GUI validation, registry operations, API testing, and AI-assisted analysis — all driven by JSON test definitions.
 
@@ -51,10 +51,301 @@ All components share a common design: **JSON-driven test definitions** processed
 
 ---
 
+## What I Built — Complete Utils Summary
+
+> **187 files** across **5 languages** — every utility hand-crafted for UEMS Agent automation.
+
+### At a Glance
+
+| Category | Count | Language | Description |
+|----------|------:|----------|-------------|
+| Communication Actions | 23 | Python | Proxy, traffic, validation, OS-level locking |
+| Proxy Layer | 5 | Python | mitmproxy integration, traffic store, rule engine |
+| Python Utilities | 4 | Python | Logging, pattern matching, variable context, service discovery |
+| GUI Actions | 18 | C# | Click, type, read, grid, screenshot, app lifecycle |
+| GUI Utilities & Helpers | 6 | C# | FlaUI automation base, Win32 interop, validation |
+| Registry Utils | 4 | C++ | WOW64-aware registry read/write/delete with JSON input |
+| Operation Handlers | 25 | Java | Install, uninstall, service, DB, API, machine ops |
+| File Operation Handlers | 15 | Java | JSON, XML, CSV, XLSX, PDF, ZIP, text, config, cert |
+| Java Utilities | 23 | Java | HTTP client, command execution, process scanner, UAC handling |
+| REST API Layer | 40 | Java | Spring Boot controllers, services, adapters, DTOs |
+| Core Framework | 24 | Java | Test engine, result analysis, LLM integration, reporting |
+| Web Components | 4 | HTML/JS/CSS | Interactive API explorer UI |
+| **Total** | **191** | | |
+
+---
+
+### Python — Communication Automation Utils (32 files)
+
+<details>
+<summary><b>23 Action Handlers</b> — traffic interception, validation, OS-level control</summary>
+
+| # | Action | File | What It Does |
+|---|--------|------|-------------|
+| 1 | `start_proxy` | `start_proxy.py` | Spawn mitmproxy as a background process that survives parent exit |
+| 2 | `stop_proxy` | `stop_proxy.py` | Stop proxy gracefully (in-process or via taskkill) |
+| 3 | `install_certificate` | `install_certificate.py` | Install/remove mitmproxy CA cert in Windows trust store |
+| 4 | `install_cert` | `install_cert.py` | Combined install CA cert action |
+| 5 | `remove_certificate` | `remove_certificate.py` | Remove CA cert from trust store |
+| 6 | `load_client_cert` | `load_client_cert.py` | Load agent mTLS cert + key, combine into PEM, hot-reload into proxy |
+| 7 | `configure_proxy` | `configure_proxy.py` | Configure Windows system proxy via netsh/registry |
+| 8 | `traffic_lock` | `traffic_lock.py` | OS-level lock: hosts file + port proxy + per-exe firewall + DNS flush |
+| 9 | `traffic_unlock` | `traffic_lock.py` | Reverse all OS-level redirections |
+| 10 | `run_command` | `run_command.py` | Run arbitrary executables and capture output |
+| 11 | `manage_service` | `manage_service.py` | Start/stop/restart Windows services with auto-discovery |
+| 12 | `wait_for_request` | `wait_for_request.py` | Block until matching HTTP request arrives (in-process + file-polling) |
+| 13 | `wait_for_interrupt` | `wait_for_interrupt.py` | Block until Ctrl+C — recording mode |
+| 14 | `load_traffic` | `load_traffic.py` | Load captured traffic from JSON file into store |
+| 15 | `capture_traffic` | `capture_traffic.py` | Dump captured traffic to JSON file |
+| 16 | `clear_captures` | `clear_captures.py` | Reset traffic buffer and capture file |
+| 17 | `switch_capture_file` | `switch_capture_file.py` | Switch live capture to a new file mid-test |
+| 18 | `validate_request` | `validate_request.py` | Assert request URL, method, headers, body |
+| 19 | `validate_response` | `validate_response.py` | Assert response status, headers, body |
+| 20 | `assert_request_count` | `assert_request_count.py` | Verify captured request count (min/max/exact) |
+| 21 | `assert_request_order` | `assert_request_order.py` | Verify request sequence ordering |
+| 22 | `modify_response` | `modify_response.py` | Inject status/body/headers or search-replace on responses |
+| 23 | `block_request` | `block_request.py` | Block or delay matching requests |
+
+</details>
+
+<details>
+<summary><b>5 Proxy Layer Components</b> — mitmproxy integration & traffic management</summary>
+
+| Component | File | What It Does |
+|-----------|------|-------------|
+| `ProxyManager` | `proxy_manager.py` | Manages mitmproxy DumpMaster lifecycle in background daemon thread |
+| `UEMSAddon` | `addon.py` | mitmproxy addon: captures traffic, applies rules, auto-detects CSR for mTLS |
+| `TrafficStore` | `traffic_store.py` | Thread-safe flow storage with wait/notify and live JSON file output |
+| `ResponseRuleEngine` | `response_rules.py` | Rule engine for response modification/blocking (one-shot + persistent) |
+| `CertificateManager` | `certificate_manager.py` | Windows certutil wrapper for CA cert install/remove |
+
+</details>
+
+<details>
+<summary><b>4 Python Utilities</b></summary>
+
+| Utility | File | What It Does |
+|---------|------|-------------|
+| `Logger` | `logger.py` | File logging + GOAT-compatible console output format |
+| `PatternMatcher` | `pattern_matcher.py` | Regex matching + 7 validation types (contains, exact, regex, etc.) |
+| `VariableContext` | `variable_context.py` | `{{stepId.property}}` substitution engine across commands |
+| `ServiceDiscovery` | `service_discovery.py` | Discover UEMS Agent install path & vault from Windows service registry |
+
+</details>
+
+---
+
+### C# — GUI Automation Utils (24 files)
+
+<details>
+<summary><b>18 GUI Action Handlers</b> — full Windows desktop automation</summary>
+
+| # | Action | File | What It Does |
+|---|--------|------|-------------|
+| 1 | `click` | `ClickAction.cs` | Click UI element by AutomationId/Name with Win32 fallback |
+| 2 | `rightclick` | `RightClickAction.cs` | Right-click context menu |
+| 3 | `doubleclick` | `DoubleClickAction.cs` | Double-click action |
+| 4 | `entertext` | `EnterTextAction.cs` | Type text into input fields |
+| 5 | `readtext` | `ReadTextAction.cs` | Read text with regex validation support |
+| 6 | `readgrid` | `ReadGridAction.cs` | Read DataGrid with cell/column/row validation |
+| 7 | `readtooltip` | `ReadToolTipAction.cs` | Extract tooltip content by hover |
+| 8 | `readstatusbyrow` | `ReadStatusByRowAction.cs` | Read status from specific grid row |
+| 9 | `toggle` | `ToggleAction.cs` | Toggle checkboxes on/off |
+| 10 | `select` | `SelectAction.cs` | Select from combo box / dropdown |
+| 11 | `screenshot` | `ScreenshotAction.cs` | Capture screenshots (on-demand or on-failure) |
+| 12 | `wait` | `WaitAction.cs` | Wait for elements to appear with timeout |
+| 13 | `checkappinstalled` | `CheckAppInstalledAction.cs` | Verify app installation via registry |
+| 14 | `checkservice` | `CheckServiceAction.cs` | Verify Windows service status |
+| 15 | `open` | `AppOpenAction.cs` | Launch applications |
+| 16 | `close` | `AppCloseAction.cs` | Close application window by name |
+| 17 | `close_all` | `AppCloseAllAction.cs` | Kill all instances of a process |
+| 18 | `BaseAction` | `BaseAction.cs` | Abstract base: element finding, window targeting, logging |
+
+</details>
+
+<details>
+<summary><b>6 GUI Utilities & Helpers</b></summary>
+
+| Utility | File | What It Does |
+|---------|------|-------------|
+| `GuiAutomatorBase` | `GuiAutomatorBase.cs` | Core FlaUI/UIA3 engine: app launch, attach, element search, Win32 interop |
+| `Win32ElementInfo` | `Win32ElementInfo.cs` | Win32 API fallback for elevated/protected windows (bypasses UIA errors) |
+| `ConsoleCapture` | `ConsoleCapture.cs` | Redirect Console.Out for capturing launch output |
+| `ControlTypeJsonConverter` | `ControlTypeJsonConverter.cs` | JSON converter for FlaUI ControlType enum |
+| `Logger` | `Logger.cs` | Timestamped file-based execution logging |
+| `ValidationHelper` | `ValidationHelper.cs` | Grid validation: cell-level, column-wise, key-value pairs |
+
+</details>
+
+---
+
+### C++ — Registry Automation Utils (4 files)
+
+| Component | File | What It Does |
+|-----------|------|-------------|
+| `RegistryAutomation` | `RegistryAutomation.cpp` | Entry point — JSON input → batch registry operations |
+| `RegistryWrapper` | `RegistryWrapper.h/.cpp` | JSON-driven registry operations with structured results & logging |
+| `MEUtil::Registry` | `RegistryUtil.h` | Low-level Win32 API: read/write/delete keys, WOW64 32/64-bit selection |
+
+---
+
+### Java — G.O.A.T Framework Utils (131 files)
+
+<details>
+<summary><b>25 Operation Handlers</b> — core automation dispatchers</summary>
+
+| # | Handler | File | What It Does |
+|---|---------|------|-------------|
+| 1 | `ExeInstall` | `ExeInstall.java` | Download and install EXE products with AutoIT UAC handling |
+| 2 | `UnInstallProduct` | `UnInstallProduct.java` | Uninstall products via AutoIT scripts |
+| 3 | `InstallPPM` | `InstallPPM.java` | Download and install PPM/service pack updates |
+| 4 | `RevertPPM` | `RevertPPM.java` | Revert/uninstall a PPM update |
+| 5 | `BatFileExecutor` | `BatFileExecutor.java` | Execute BAT files with multi-threading and UAC |
+| 6 | `CommandExecutor` | `CommandExecutor.java` | Execute system commands (`run_command`) |
+| 7 | `TaskManagerHandler` | `TaskManagerHandler.java` | Process scanning, killing, task management |
+| 8 | `ServiceManagementHandler` | `ServiceManagementHandler.java` | Windows service start/stop/restart/status |
+| 9 | `MachineOperation` | `MachineOperation.java` | Machine-level operations via command framework |
+| 10 | `DataBaseOperationHandler` | `DataBaseOperationHandler.java` | DB queries with encrypted connections |
+| 11 | `MSSQLMigration` | `MSSQLMigration.java` | MSSQL database migration with XML config editing |
+| 12 | `ApiCaseHandler` | `ApiCaseHandler.java` | Execute and validate API test cases |
+| 13 | `FileEditHandler` | `FileEditHandler.java` | Dispatch file editing to format-specific handlers |
+| 14 | `FileFolderHandler` | `FileFolderHandler.java` | File/folder CRUD: create, delete, copy, move, permissions |
+| 15 | `GuiOperation` | `GuiOperation.java` | GUI automation via AssertJ Swing |
+| 16 | `NativeGUIOperationHandler` | `NativeGUIOperationHandler.java` | Bridge to C# Agent_GUI_Utils.exe for native GUI testing |
+| 17 | `RegistryOperation` | `RegistryOperation.java` | Bridge to C++ RegistryAutomation.exe |
+| 18 | `AgentCommunicationOperation` | `AgentCommunicationOperation.java` | Bridge to Python CommunicationAutomation.exe |
+| 19 | `WaitForConditionHandler` | `WaitForConditionHandler.java` | Poll for file/DB/log conditions with configurable interval |
+| 20 | `Base64EncodeDecoder` | `Base64EncodeDecoder.java` | Base64 encode/decode on strings and files |
+| 21 | `BatchFileExecutor` | `BatchFileExecutor.java` | Legacy batch file executor |
+| 22 | `FileReader` | `FileReader.java` | Enhanced file reader for various formats |
+| 23 | `FileReaderUtil` | `FileReaderUtil.java` | File/folder presence checks and reads |
+| 24 | `MachineOperationHandler` | `MachineOperationHandler.java` | Hostname, IP, specs retrieval |
+| 25 | `ServerUtils` | `ServerUtils.java` | Server home discovery and network utilities |
+
+</details>
+
+<details>
+<summary><b>15 File Operation Handlers</b> — every file format covered</summary>
+
+| # | Handler | File | Formats & Operations |
+|---|---------|------|---------------------|
+| 1 | `JSONFileHandler` | `JSONFileHandler.java` | Read, write, update, validate JSON (Jackson) |
+| 2 | `XMLFileHandler` | `XMLFileHandler.java` | Read, edit, validate XML (DOM parser) |
+| 3 | `CSVFileHandler` | `CSVFileHandler.java` | Read and validate CSV files |
+| 4 | `XLSXFileHandler` | `XLSXFileHandler.java` | Read and validate Excel spreadsheets (Apache POI) |
+| 5 | `TextFileHandler` | `TextFileHandler.java` | Read, write, search, edit text files with regex |
+| 6 | `PDFFileHandler` | `PDFFileHandler.java` | Read and search PDFs (Apache PDFBox) |
+| 7 | `ConfigFileHandler` | `ConfigFileHandler.java` | Edit .conf, .ini, .properties files |
+| 8 | `ArchiveHandler` | `ArchiveHandler.java` | Compress/extract ZIP and 7z archives |
+| 9 | `JarFileHandler` | `JarFileHandler.java` | Extract, list, verify JAR signatures, check manifest |
+| 10 | `CertificateFileHandler` | `GetValueFromCertificatefile.java` | Extract values from certificates (certutil + regex) |
+| 11 | `FileFolderHandler` | `FileFolderHandler.java` | Create, delete, copy, move, rename, permissions, timestamps |
+| 12 | `UnAuthFileDownload` | `UnAuthFileDownload.java` | Download files from URLs without auth |
+| 13 | `RoboCopyHandler` | `RoboCopyHandler.java` | Robocopy between directories/machines |
+| 14 | `BatFileEditor` | `BatFileEditor.java` | Edit .bat files (find/replace, append, insert) |
+| 15 | `TempWorkaroundOperation` | `TempWorkaroundOperation.java` | File age checks, pattern-based temp operations |
+
+</details>
+
+<details>
+<summary><b>23 Java Utilities</b> — command execution, HTTP, process management</summary>
+
+| # | Utility | File | What It Does |
+|---|---------|------|-------------|
+| 1 | `API` | `API.java` | HTTP REST client (GET/POST) with auth & file writing |
+| 2 | `CommandExecutor` | `command/CommandExecutor.java` | Core command runner with timeout and output parsing |
+| 3 | `CommandRegistry` | `command/CommandRegistry.java` | Registry for command definitions loaded from JSON config |
+| 4 | `CommandResult` | `command/CommandResult.java` | Value object: output, exit code, timeout state |
+| 5 | `CommandDefinition` | `command/CommandDefinition.java` | Storable command with type, timeout, UAC flag |
+| 6 | `CommandOutputProcessor` | `command/CommandOutputProcessor.java` | Interface for processing command output |
+| 7 | `CommandType` | `command/CommandType.java` | Enum: CMD or POWERSHELL |
+| 8 | `EnhancedUacHandler` | `command/EnhancedUacHandler.java` | Windows UAC prompt handling via AutoIT |
+| 9 | `CommonUtill` | `CommonUtill.java` | Path resolution, JAR loading, server home lookup |
+| 10 | `DownloadFile` | `DownloadFile.java` | HTTP file download with token-based auth |
+| 11 | `ProcessScanner` | `ProcessScanner.java` | Scan running processes, run CMD commands |
+| 12 | `LogManager` | `LogManager.java` | Centralized logger with log-type separation |
+| 13 | `LockFileUtil` | `LockFileUtil.java` | File-based locking (FileChannel/FileLock) |
+| 14 | `JsonResponseValidator` | `JsonResponseValidator.java` | Validate JSON responses (path, value, regex) |
+| 15 | `PropertiesUtil` | `PropertiesUtil.java` | Load/save .properties files |
+| 16 | `StringUtil` | `StringUtil.java` | String manipulation and regex helpers |
+| 17 | `ServerUtils` | `ServerUtils.java` | Server URL building and connectivity checks |
+| 18 | `Uninstall` | `Uninstall.java` | Product uninstall via AutoIT with UAC |
+| 19 | `GOATCommonConstants` | `GOATCommonConstants.java` | Global constants: paths, exe locations, tool configs |
+| 20 | `LoginTestConstants` | `LoginTestConstants.java` | Auth testing constants (cookies, URLs) |
+| 21 | `ModelTestUtility` | `ModelTestUtility.java` | LLM model testing via HTTP |
+| 22 | `CommandProcessor` | `CommandProcessor.java` | Legacy command execution wrapper |
+| 23 | `LoggingConfig` | `LoggingConfig.java` | Logging system configuration |
+
+</details>
+
+<details>
+<summary><b>40 REST API Layer Components</b> — Spring Boot API for test orchestration</summary>
+
+| Category | Files | What They Do |
+|----------|------:|-------------|
+| Controllers | 6 | REST endpoints: test cases, execution, reports, files, system health |
+| Services | 4 | Business logic: CRUD, async execution queue, report generation |
+| Adapters | 5 | Bridge between API DTOs and core framework objects |
+| Models/DTOs | 7 | Request/response models with custom Jackson serialization |
+| Config | 6 | CORS, Jackson, Swagger, validation, static resources |
+| Error Handling | 3 | Global exception handler with consistent error responses |
+| Bridge | 1 | `GoatFrameworkBridge` connects Spring layer to core GOAT engine |
+| Swagger | 1 | Optional Swagger/OpenAPI support with reflection-based detection |
+| Utilities | 3 | JSON parsing, test status tracking, constants |
+| Application | 1 | `GoatApiApplication` — Spring Boot main class |
+| **Subtotal** | **37** | |
+
+</details>
+
+<details>
+<summary><b>24 Core Framework Components</b> — test engine, analysis, reporting, LLM</summary>
+
+| Component | File | What It Does |
+|-----------|------|-------------|
+| `TestExecutor` | `TestExecutor.java` | Core engine — iterates operations and manages results |
+| `OperationHandlerFactory` | `OperationHandlerFactory.java` | Dispatches 20+ operation types to correct handler |
+| `TestCaseReader` | `TestCaseReader.java` | Read test cases from XLSX, CSV, JSON |
+| `TestCaseConverter` | `TestCaseConverter.java` | Convert between XLSX/CSV and JSON formats |
+| `TestCaseValidator` | `TestCaseValidator.java` | Validate test case structure and required fields |
+| `TestCaseProcessor` | `TestCaseProcessor.java` | Process test cases through the LLM pipeline |
+| `TestResultManager` | `TestResultManager.java` | Persist and aggregate test results |
+| `ResultAnalyzer` | `ResultAnalyzer.java` | Produce statistics: pass/fail/skip counts, success rate |
+| `ResultComparator` | `ResultComparator.java` | Compare actual vs expected results |
+| `ReportGenerator` | `ReportGenerator.java` | Generate test reports and results files |
+| `HtmlReportGenerator` | `HtmlReportGenerator.java` | HTML-formatted test reports |
+| `GuiTestBatGenerator` | `GuiTestBatGenerator.java` | Generate .bat files for GUI test execution |
+| `LLAMAClient` | `LLAMAClient.java` | Ollama/LLM API client for AI-powered analysis |
+| `ResponseHandler` | `ResponseHandler.java` | Parse LLM responses and drive test execution |
+| `ResolveOperationParameters` | `ResolveOperationParameters.java` | Variable resolution and parameter substitution |
+| `EndToEndTestRunner` | `EndToEndTestRunner.java` | Orchestrate multi-test-case E2E suites |
+| `ApiTester` | `ApiTester.java` | Execute and validate REST API test cases |
+| `GOATMain` | `GOATMain.java` | Application entry point with PID management |
+| `GOATMenu` | `GOATMenu.java` | Interactive console menu |
+| `Operation` | `Operation.java` | Operation model with parameters |
+| `TestCase` | `TestCase.java` | Test case model with operations list |
+| `TestResult` | `TestResult.java` | Standardized result (PASSED/FAILED/SKIPPED/WARNING) |
+| `AnalysisResult` | `AnalysisResult.java` | Analysis output model |
+| `ApiTestCase` | `ApiTestCase.java` | API test case model |
+
+</details>
+
+---
+
+### Web — API Explorer (4 files)
+
+| Component | File | What It Does |
+|-----------|------|-------------|
+| Explorer UI | `explorer.html` | Interactive API testing interface with sidebar navigation |
+| JavaScript | `api-explorer.js` | Endpoint execution, request building, live response display |
+| Styles | `styles.css` | Explorer UI styling |
+| Static Index | `index.html` | Static file server landing page |
+
+---
+
 ## Repository Structure
 
 ```
-Communication-Automation/
+Automation-Utils/
 │
 ├── Agent_Automation/
 │   ├── CommunicationAutomation/     # Python MITM proxy framework
@@ -356,7 +647,7 @@ All components use the same JSON-driven pattern:
 
 ## Supported Actions
 
-### Communication Automation (21 Actions)
+### Automation Utils — Communication (21 Actions)
 
 | # | Action | Category | Description |
 |---|--------|----------|-------------|
@@ -573,7 +864,7 @@ build:    build system changes     build: update PyInstaller spec
 ### Key Files at Repository Root
 
 ```
-Communication-Automation/
+Automation-Utils/
 ├── README.md          ← you are here
 ├── LICENSE            ← proprietary license (All Rights Reserved)
 ├── .gitignore         ← ignore build outputs, secrets, IDE files
