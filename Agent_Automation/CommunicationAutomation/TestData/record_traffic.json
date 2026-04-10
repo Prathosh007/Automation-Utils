@@ -1,0 +1,128 @@
+[
+    {
+        "id": "REC_001",
+        "action": "install_certificate",
+        "cert_action": "install",
+        "description": "Install mitmproxy CA cert"
+    },
+    {
+        "id": "REC_002",
+        "action": "patch_registry",
+        "registry_key": "HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo",
+        "registry_action": "patch",
+        "old_values": ["naveen-14097", "10.69.73.19", "8383"],
+        "new_values": ["127.0.0.1", "127.0.0.1", "8080"],
+        "description": "Redirect agent registry: server address and port -> proxy"
+    },
+    {
+        "id": "REC_003",
+        "action": "start_proxy",
+        "listen_host": "127.0.0.1",
+        "listen_port": 8080,
+        "mode": "reverse:https://10.69.73.19:8383",
+        "ssl_insecure": true,
+        "description": "Start reverse proxy: 127.0.0.1:8080 -> 10.69.73.19:8383"
+    },
+    {
+        "id": "REC_004",
+        "action": "run_command",
+        "command_line": "powershell -Command \"Add-Content 'C:\\Windows\\System32\\drivers\\etc\\hosts' '`n127.0.0.1 naveen-14097'\"",
+        "continueOnFailure": true,
+        "description": "Hosts file: redirect server hostname naveen-14097 -> 127.0.0.1"
+    },
+    {
+        "id": "REC_005",
+        "action": "run_command",
+        "command_line": "netsh interface portproxy add v4tov4 listenport=8383 listenaddress=127.0.0.1 connectport=8080 connectaddress=127.0.0.1",
+        "continueOnFailure": true,
+        "description": "Port proxy: forward 127.0.0.1:8383 -> 127.0.0.1:8080 (agent reading port 8383 from meta-data XML)"
+    },
+    {
+        "id": "REC_006",
+        "action": "run_command",
+        "command_line": "netsh advfirewall firewall add rule name=\"BlockUEMSDirectServer\" dir=out action=block protocol=TCP remoteip=10.69.73.19 remoteport=8383",
+        "continueOnFailure": true,
+        "description": "Firewall: block direct outbound to real server IP:port"
+    },
+    {
+        "id": "REC_007",
+        "action": "run_command",
+        "command_line": "ipconfig /flushdns",
+        "continueOnFailure": true,
+        "description": "Flush DNS so hosts file change takes effect immediately"
+    },
+    {
+        "id": "REC_008",
+        "action": "clear_captures",
+        "description": "Reset capture buffer before recording"
+    },
+    {
+        "id": "REC_009",
+        "action": "run_command",
+        "command_line": "\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\"",
+        "timeout": 30,
+        "continueOnFailure": true,
+        "description": "Trigger agent config refresh via cfgupdate.exe"
+    },
+    {
+        "id": "REC_010",
+        "action": "wait_for_interrupt",
+        "description": "Record all traffic until Ctrl+C"
+    },
+    {
+        "id": "REC_011",
+        "action": "capture_traffic",
+        "capture_file": "Reports/recorded-traffic.json",
+        "continueOnFailure": true,
+        "description": "Dump all captured traffic to file"
+    },
+    {
+        "id": "REC_012",
+        "action": "run_command",
+        "command_line": "netsh advfirewall firewall delete rule name=\"BlockUEMSDirectServer\"",
+        "continueOnFailure": true,
+        "description": "Firewall: remove block rule for real server"
+    },
+    {
+        "id": "REC_013",
+        "action": "run_command",
+        "command_line": "netsh interface portproxy delete v4tov4 listenport=8383 listenaddress=127.0.0.1",
+        "continueOnFailure": true,
+        "description": "Port proxy: remove 127.0.0.1:8383 -> 8080 forward"
+    },
+    {
+        "id": "REC_014",
+        "action": "run_command",
+        "command_line": "powershell -Command \"(Get-Content 'C:\\Windows\\System32\\drivers\\etc\\hosts') | Where-Object { $_ -notmatch '127\\.0\\.0\\.1 naveen-14097' } | Set-Content 'C:\\Windows\\System32\\drivers\\etc\\hosts'\"",
+        "continueOnFailure": true,
+        "description": "Hosts file: remove naveen-14097 entry"
+    },
+    {
+        "id": "REC_015",
+        "action": "run_command",
+        "command_line": "ipconfig /flushdns",
+        "continueOnFailure": true,
+        "description": "Flush DNS after restoring hosts file"
+    },
+    {
+        "id": "REC_016",
+        "action": "patch_registry",
+        "registry_key": "HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo",
+        "registry_action": "restore",
+        "continueOnFailure": true,
+        "description": "Restore original registry values"
+    },
+    {
+        "id": "REC_017",
+        "action": "run_command",
+        "command_line": "\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\"",
+        "timeout": 30,
+        "continueOnFailure": true,
+        "description": "Trigger cfgupdate to apply restored config"
+    },
+    {
+        "id": "REC_018",
+        "action": "stop_proxy",
+        "description": "Stop the proxy"
+    }
+]

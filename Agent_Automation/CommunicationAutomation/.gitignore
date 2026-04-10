@@ -1,0 +1,24 @@
+# Virtual environment
+.venv/
+
+# Build output
+build/
+dist/
+main.build/
+main.dist/
+main.onefile-build/
+CommunicationAutomation.egg-info/
+
+# Runtime output
+Logs/
+Reports/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.idea/
+.vscode/
+*.swp

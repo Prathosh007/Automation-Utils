@@ -1,0 +1,48 @@
+[
+    {
+        "id": "SMOKE_001",
+        "action": "start_proxy",
+        "listen_host": "127.0.0.1",
+        "listen_port": 8080,
+        "description": "Start MITM proxy"
+    },
+    {
+        "id": "SMOKE_002",
+        "action": "clear_captures",
+        "description": "Clear traffic buffer"
+    },
+    {
+        "id": "SMOKE_003",
+        "action": "modify_response",
+        "url_pattern": ".*/test.*",
+        "inject_status": 403,
+        "inject_body": "{\"error\": \"forbidden\"}",
+        "description": "Add a response injection rule"
+    },
+    {
+        "id": "SMOKE_004",
+        "action": "wait_for_request",
+        "url_pattern": ".*/anything.*",
+        "timeout": 5,
+        "continueOnFailure": true,
+        "description": "Wait 5s for any request (will timeout - expected)"
+    },
+    {
+        "id": "SMOKE_005",
+        "action": "assert_request_count",
+        "url_pattern": ".*",
+        "expected_count": 0,
+        "description": "Assert no traffic captured (proxy just started)"
+    },
+    {
+        "id": "SMOKE_006",
+        "action": "capture_traffic",
+        "capture_file": "Reports/smoke-capture.json",
+        "description": "Dump empty traffic to file"
+    },
+    {
+        "id": "SMOKE_007",
+        "action": "stop_proxy",
+        "description": "Stop proxy cleanly"
+    }
+]

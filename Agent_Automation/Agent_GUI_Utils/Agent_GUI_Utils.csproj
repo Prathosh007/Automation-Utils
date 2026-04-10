@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
+		<AssemblyTitle>GUI Agent Utils</AssemblyTitle>
+		<AssemblyDescription>FlaUI-based GUI automation utilities</AssemblyDescription>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<!-- Platform configurations -->
+		<Platforms>AnyCPU;x86;x64</Platforms>
+		<PlatformTarget Condition="'$(Platform)' == 'x86'">x86</PlatformTarget>
+		<PlatformTarget Condition="'$(Platform)' == 'x64'">x64</PlatformTarget>
+		<!-- ================================================ -->
+		<!-- SINGLE-FILE SELF-CONTAINED PUBLISHING SETTINGS   -->
+		<!-- ================================================ -->
+		<RuntimeIdentifier Condition="'$(Platform)' == 'x86'">win-x86</RuntimeIdentifier>
+		<RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
+		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+		<PublishTrimmed>false</PublishTrimmed>
+		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+		<!-- Output configuration -->
+		<OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>embedded</DebugType>
+	</PropertyGroup>
+
+	<!-- ================================================ -->
+	<!-- Automatically publish after build                -->
+	<!-- ================================================ -->
+	<Target Name="PublishAfterBuild" AfterTargets="Build">
+		<Exec Command="dotnet publish &quot;$(MSBuildProjectFile)&quot; -c $(Configuration) -p:Platform=$(Platform) --no-build" />
+	</Target>
+
+	<ItemGroup>
+		<PackageReference Include="FlaUI.Core" Version="4.0.0" />
+		<PackageReference Include="FlaUI.UIA3" Version="4.0.0" />
+		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+		<PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.8" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="TestData\*.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="Logs\" />
+		<Folder Include="Reports\" />
+		<Folder Include="Screenshots\" />
+	</ItemGroup>
+</Project>

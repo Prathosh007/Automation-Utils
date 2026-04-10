@@ -1,0 +1,12 @@
+[
+    {"id": "SETUP_001", "action": "install_certificate", "certAction": "install",
+     "description": "Install mitmproxy CA cert"},
+
+    {"id": "SETUP_002", "action": "start_proxy",
+     "listenHost": "0.0.0.0", "listenPort": 8080,
+     "mode": "reverse:https://172.24.148.221:8383",
+     "sslInsecure": true,
+     "autoLoadCert": true,
+     "liveCaptureFile": "Reports/csr-capture-traffic.json",
+     "description": "Start background reverse proxy to UEMS server. Traffic saved live to Reports/csr-capture-traffic.json"}
+]

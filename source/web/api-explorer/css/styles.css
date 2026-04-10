@@ -1,0 +1,277 @@
+/* CSS Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background-color: #f5f7fa;
+    color: #333;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+header {
+    background-color: #3c4b64;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.server-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+#status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #f1c40f; /* Yellow for loading */
+}
+
+#status-indicator.online {
+    background-color: #2ecc71; /* Green for online */
+}
+
+#status-indicator.offline {
+    background-color: #e74c3c; /* Red for offline */
+}
+
+.api-content {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #e6e6e6;
+    padding: 1rem 0;
+}
+
+.sidebar h3 {
+    padding: 0 1rem 0.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #e6e6e6;
+    color: #555;
+}
+
+.endpoint-list {
+    list-style: none;
+}
+
+.endpoint-list li {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-left: 4px solid transparent;
+}
+
+.endpoint-list li.category {
+    font-weight: 600;
+    color: #5a6268;
+    margin-top: 1rem;
+    pointer-events: none;
+}
+
+.endpoint-list li.endpoint {
+    padding-left: 2rem;
+    font-size: 0.95rem;
+}
+
+.endpoint-list li.endpoint:hover {
+    background-color: #e9ecef;
+    border-left-color: #adb5bd;
+}
+
+.endpoint-list li.active {
+    background-color: #e2e6ea;
+    border-left-color: #3c4b64;
+    color: #3c4b64;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.section {
+    margin-bottom: 2rem;
+}
+
+.section h2 {
+    margin-bottom: 1rem;
+    color: #3c4b64;
+    border-bottom: 1px solid #e6e6e6;
+    padding-bottom: 0.5rem;
+}
+
+.section p {
+    margin-bottom: 1.5rem;
+    color: #6c757d;
+}
+
+.endpoint-details {
+    background-color: #f8f9fa;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1.5rem;
+    font-family: monospace;
+    display: flex;
+    align-items: center;
+}
+
+.method {
+    background-color: #28a745;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-right: 0.5rem;
+    font-weight: bold;
+}
+
+.method.post {
+    background-color: #007bff;
+}
+
+.url {
+    color: #3c4b64;
+    font-weight: 500;
+}
+
+.param-container {
+    margin-bottom: 1.5rem;
+}
+
+.param-container label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.param-container input,
+.param-container textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.json-input {
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.execute-btn {
+    background-color: #3c4b64;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.execute-btn:hover {
+    background-color: #2d3a4f;
+}
+
+.response-container {
+    margin-top: 1.5rem;
+}
+
+.response-container h3 {
+    margin-bottom: 0.5rem;
+    color: #5a6268;
+}
+
+.response {
+    background-color: #f8f9fa;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    padding: 1rem;
+    overflow: auto;
+    max-height: 400px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+}
+
+.hidden {
+    display: none;
+}
+
+.server-info {
+    margin-top: 2rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    padding: 1rem;
+}
+
+.server-info h3 {
+    margin-bottom: 1rem;
+    color: #3c4b64;
+}
+
+#server-details {
+    font-family: monospace;
+}
+
+footer {
+    background-color: #3c4b64;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+    .api-content {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e6e6e6;
+    }
+    
+    header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .server-status {
+        margin-top: 0.5rem;
+        justify-content: center;
+    }
+}

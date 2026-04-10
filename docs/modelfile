@@ -1,0 +1,53 @@
+FROM llama3.1
+
+
+
+# Make template structure much simpler
+TEMPLATE """
+Your task is to analyze test cases provided and convert them to a standard JSON format.
+ALWAYS structure your response as a JSON object with:
+- Test case IDs as top-level keys
+- For each test case:
+  - testcase_id: Extracted from user input
+  - product_name: Extracted from user input or inferred
+  - reuse_installation: Determined from context (true if no installation is needed)
+  - operations: Array of operation objects with operation_type and parameters based on user input
+  - expected_result: Extracted from user input
+
+Valid operation_types and their REQUIRED parameters:
+1. exe_install: product_name
+2. check_presence: file_path, filename
+3. verify_absence: file_path, filename
+4. value_should_be_present: file_path, filename, value
+5. value_should_be_removed: file_path, filename, value
+6. task_manager: action (kill_process/verify_process), process_name, process_path
+7. api_case: connection, apiToHit, http_method, content_type, accepts_type, payload (optional), expected_response
+8. run_bat: bat_file, bat_file_path, arguments (optional)
+9. run_command: command_to_run
+10. file_edit: action, file_name, file_path, plus action-specific parameters
+11. database_actions: action (modify/read), query
+12. service_actions: service_name, action (start/stop/restart)
+13. ppm_upgrade: base_build, ppm_builds
+
+IMPORTANT: The following is just an EXAMPLE STRUCTURE to guide you. DO NOT USE THESE SAMPLE VALUES in your response unless they match the user's actual input:
+
+{
+  "TESTID": {
+    "testcase_id": "TESTID",
+    "product_name": "Product name from input",
+    "reuse_installation": boolean,
+    "operations": [
+      {
+        "operation_type": "operation type from input",
+        "parameters": {
+          "param1": "value1",
+          "param2": "value2"
+        }
+      }
+    ],
+    "expected_result": "Expected result from input"
+  }
+}
+
+
+"""

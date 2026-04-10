@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Upload/Download</title>
+</head>
+<body>
+    <h2>Upload File</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" required />
+        <button type="submit">Upload</button>
+    </form>
+    <div id="uploadResult" style="white-space: pre-line;">
+        <!-- Success message elements will be injected here -->
+    </div>
+    <h2>Download Files</h2>
+    <ul id="fileList"></ul>
+<script>
+function refreshFileList() {
+    fetch('/api/files/list')
+        .then(r => r.json())
+        .then(resp => {
+            const ul = document.getElementById('fileList');
+            ul.innerHTML = '';
+            if (resp.success && Array.isArray(resp.data)) {
+                resp.data.forEach(f => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<a href="/api/files/download?filename=${encodeURIComponent(f)}">${f}</a>`;
+                    ul.appendChild(li);
+                });
+            } else {
+                ul.innerHTML = '<li>No files found or error occurred.</li>';
+            }
+        });
+}
+
+document.getElementById('uploadForm').onsubmit = function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const startTime = Date.now();
+    fetch('/api/files/upload', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(resp => {
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+            let resultMsg = '';
+            if (resp.success) {
+                const filename = formData.get('file').name;
+                const downloadUrl = `${window.location.protocol}//${window.location.hostname}:9295/api/files/download?filename=${encodeURIComponent(filename)}`;
+                resultMsg = `
+                    <div id="uploadSuccessMsg">File uploaded successfully!</div>
+                    <div>Path: <span id="uploadPath">${resp.data}</span></div>
+                    <div>Download: <a id="uploadDownloadUrl" href="${downloadUrl}" target="_blank">${downloadUrl}</a></div>
+                    <div>Upload time: <span id="uploadTime">${duration}</span> ms</div>
+                `;
+            } else {
+                resultMsg = `
+                    <div id="uploadFailMsg">Upload failed: ${resp.message}</div>
+                    <div>Upload time: <span id="uploadTime">${duration}</span> ms</div>
+                `;
+            }
+            document.getElementById('uploadResult').innerHTML = resultMsg;
+            refreshFileList();
+        });
+};
+refreshFileList();
+</script>
+</body>
+</html>

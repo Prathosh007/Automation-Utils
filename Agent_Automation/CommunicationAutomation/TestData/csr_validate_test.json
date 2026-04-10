@@ -1,0 +1,54 @@
+[
+    {"id": "WAIT_001", "action": "wait_for_request",
+     "urlPattern": "ClientCSRSign",
+     "captureFile": "Reports/csr-capture-traffic.json",
+     "timeout": 300,
+     "description": "Poll live capture file until CSR request appears (5 min timeout)"},
+
+    {"id": "TC_001", "action": "validate_request",
+     "urlPattern": "ClientCSRSign", "method": "POST",
+     "continueOnFailure": true,
+     "description": "CSR request: verify method is POST"},
+
+    {"id": "TC_002", "action": "validate_request",
+     "urlPattern": "ClientCSRSign",
+     "bodyPattern": ".*",
+     "validationType": "notempty",
+     "continueOnFailure": true,
+     "description": "CSR request: verify body is not empty"},
+
+    {"id": "TC_003", "action": "validate_response",
+     "urlPattern": "ClientCSRSign",
+     "expectedStatus": 200,
+     "continueOnFailure": true,
+     "description": "CSR response: verify 200 OK"},
+
+    {"id": "TC_004", "action": "validate_response",
+     "urlPattern": "ClientCSRSign",
+     "bodyPattern": ".*",
+     "validationType": "notempty",
+     "continueOnFailure": true,
+     "description": "CSR response: verify body is not empty"},
+
+    {"id": "TC_005", "action": "validate_request",
+     "urlPattern": "agentAuthPropsRequest|agentSlot",
+     "continueOnFailure": true,
+     "description": "Post-CSR request exists (mTLS forwarding worked)"},
+
+    {"id": "TC_006", "action": "validate_response",
+     "urlPattern": "agentAuthPropsRequest|agentSlot",
+     "expectedStatus": 200,
+     "continueOnFailure": true,
+     "description": "Post-CSR response: 200 OK"},
+
+    {"id": "TC_007", "action": "assert_request_count",
+     "urlPattern": "ClientCSRSign",
+     "minCount": 1,
+     "continueOnFailure": true,
+     "description": "At least 1 CSR request captured"},
+
+    {"id": "TC_008", "action": "assert_request_order",
+     "expectedOrder": ["ClientCSRSign", "agentAuthPropsRequest|agentSlot"],
+     "continueOnFailure": true,
+     "description": "CSR request came before post-CSR mTLS requests"}
+]

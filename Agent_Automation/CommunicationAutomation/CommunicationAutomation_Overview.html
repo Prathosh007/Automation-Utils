@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CommunicationAutomation - Project Overview</title>
+<style>
+    @page { margin: 20mm; }
+    body { font-family: Segoe UI, Calibri, Arial, sans-serif; color: #222; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 30px; }
+    h1 { color: #1a5276; border-bottom: 3px solid #1a5276; padding-bottom: 8px; font-size: 24px; }
+    h2 { color: #2c3e50; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; margin-top: 30px; font-size: 18px; }
+    h3 { color: #34495e; font-size: 15px; margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+    th { background: #2c3e50; color: #fff; padding: 8px 12px; text-align: left; }
+    td { border: 1px solid #ddd; padding: 7px 12px; }
+    tr:nth-child(even) { background: #f8f9fa; }
+    code { background: #ecf0f1; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 12px; }
+    pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-size: 12px; overflow-x: auto; }
+    .badge { display: inline-block; background: #27ae60; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+    .section-box { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 12px 16px; margin: 12px 0; border-radius: 3px; }
+    .flow-box { background: #fef9e7; border-left: 4px solid #f39c12; padding: 12px 16px; margin: 12px 0; border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; }
+    .highlight { background: #d5f5e3; padding: 2px 6px; border-radius: 3px; }
+    p { margin: 8px 0; font-size: 14px; }
+    li { font-size: 14px; margin: 4px 0; }
+    .page-break { page-break-before: always; }
+    .footer { margin-top: 40px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 11px; color: #888; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>CommunicationAutomation <span class="badge">Active Development</span></h1>
+<p><strong>UEMS Agent HTTPS Traffic Capture & Validation Framework</strong></p>
+<p>A Python-based MITM proxy automation framework for intercepting, capturing, and validating UEMS agent HTTPS communication using <strong>mitmproxy</strong>. Follows the JSON-driven, GOAT-server-compatible pattern used across Agent Automation projects.</p>
+
+<h2>1. What It Does</h2>
+<p>This tool acts as a <strong>man-in-the-middle proxy</strong> between the UEMS agent and the DC server. It intercepts all HTTPS traffic the agent sends, captures request/response data, and runs automated validation test cases against the captured traffic.</p>
+
+<div class="flow-box">
+UEMS Agent &rarr; mitmproxy (127.0.0.1:8080) &rarr; Real DC Server (HTTPS)
+                        |
+                  Captures all traffic
+                  (URLs, headers, bodies, status codes)
+</div>
+
+<h3>Key Capabilities</h3>
+<ul>
+    <li><strong>Traffic Recording</strong> &mdash; Capture all agent HTTPS communication indefinitely until stopped</li>
+    <li><strong>Request Validation</strong> &mdash; Verify HTTP method, URL parameters, headers, body content</li>
+    <li><strong>Response Validation</strong> &mdash; Verify status codes, response headers, body content</li>
+    <li><strong>Request Count Assertion</strong> &mdash; Verify expected number of requests per endpoint</li>
+    <li><strong>Request Order Assertion</strong> &mdash; Verify correct request sequence</li>
+    <li><strong>Traffic Export</strong> &mdash; Dump captured data to JSON for analysis</li>
+</ul>
+
+<h2>2. How It Works</h2>
+
+<div class="section-box">
+<strong>Step-by-step execution flow:</strong>
+<ol>
+    <li>Install mitmproxy CA certificate into Windows trust store</li>
+    <li>Patch Windows Registry to redirect agent traffic to local proxy</li>
+    <li>Apply OS-level traffic lock (hosts file + firewall + port proxy) to prevent agent bypass</li>
+    <li>Start mitmproxy as a reverse proxy forwarding to the real server</li>
+    <li>Trigger <code>cfgupdate.exe</code> to force agent config refresh</li>
+    <li>Capture and/or validate all HTTPS traffic</li>
+    <li>Save captured traffic to JSON report</li>
+    <li>Cleanup: restore all OS-level changes, restore registry, stop proxy</li>
+</ol>
+</div>
+
+<h3>Why OS-Level Traffic Lock?</h3>
+<p>The agent reads the real server address from the <code>meta-data.xml</code> response body and can reconnect directly, bypassing the proxy. Three OS-level locks prevent this:</p>
+
+<table>
+    <tr><th>Layer</th><th>Mechanism</th><th>What It Blocks</th></tr>
+    <tr><td>Hosts File</td><td><code>127.0.0.1 &lt;server-hostname&gt;</code></td><td>Hostname-based connections</td></tr>
+    <tr><td>Port Proxy</td><td><code>127.0.0.1:8383 &rarr; 127.0.0.1:8080</code></td><td>Agent using port read from XML</td></tr>
+    <tr><td>Firewall</td><td>Block outbound to real server IP</td><td>Direct IP-based connections</td></tr>
+</table>
+<p>All three are applied before capture and removed automatically during cleanup.</p>
+
+<h2>3. JSON-Driven Test Engine</h2>
+<p>All test scenarios are defined as <strong>JSON files</strong>. Each file contains an array of commands executed sequentially. No code changes are needed to add new test cases &mdash; just write a new JSON file.</p>
+
+<pre>
+[
+  {"id": "STEP_001", "action": "start_proxy", "listen_port": 8080},
+  {"id": "STEP_002", "action": "wait_for_request", "url_pattern": "agentSlot", "timeout": 180},
+  {"id": "TC_001",   "action": "validate_request", "url_pattern": "agentSlot", "method": "GET"},
+  {"id": "TC_002",   "action": "validate_response", "url_pattern": "agentSlot", "expected_status": 200},
+  {"id": "STEP_003", "action": "stop_proxy"}
+]
+</pre>
+
+<p><strong>16 built-in actions</strong> are available: proxy control, certificate management, registry patching, OS commands, traffic validation, response modification, and more.</p>
+
+<h2 class="page-break">4. Validation Capabilities</h2>
+
+<h3>Request Validation</h3>
+<table>
+    <tr><th>What to Check</th><th>JSON Fields</th><th>Example</th></tr>
+    <tr><td>HTTP Method</td><td><code>method</code></td><td><code>"method": "GET"</code></td></tr>
+    <tr><td>URL Content</td><td><code>expected_value</code></td><td><code>"expected_value": "actionToCall=AgentOfset"</code></td></tr>
+    <tr><td>Request Header</td><td><code>header_name</code> + <code>expected_value</code></td><td><code>"header_name": "Authorization"</code></td></tr>
+    <tr><td>Request Body</td><td><code>body_pattern</code></td><td><code>"body_pattern": "ResourceId"</code></td></tr>
+</table>
+
+<h3>Response Validation</h3>
+<table>
+    <tr><th>What to Check</th><th>JSON Fields</th><th>Example</th></tr>
+    <tr><td>Status Code</td><td><code>expected_status</code></td><td><code>"expected_status": 200</code></td></tr>
+    <tr><td>Response Header</td><td><code>header_name</code> + <code>expected_value</code></td><td><code>"header_name": "Content-Type"</code></td></tr>
+    <tr><td>Response Body</td><td><code>body_pattern</code></td><td><code>"body_pattern": "DCServerInfo"</code></td></tr>
+</table>
+
+<h3>Matching Types</h3>
+<table>
+    <tr><th>Type</th><th>Behaviour</th></tr>
+    <tr><td><code>contains</code></td><td>Value contains expected string (default)</td></tr>
+    <tr><td><code>exact</code></td><td>Exact match</td></tr>
+    <tr><td><code>startswith</code></td><td>Value starts with expected</td></tr>
+    <tr><td><code>endswith</code></td><td>Value ends with expected</td></tr>
+    <tr><td><code>regex</code></td><td>Regular expression match</td></tr>
+    <tr><td><code>notempty</code></td><td>Value exists and is not empty</td></tr>
+</table>
+
+<h3>Count & Order Assertions</h3>
+<table>
+    <tr><th>Action</th><th>Purpose</th><th>Example</th></tr>
+    <tr><td><code>assert_request_count</code></td><td>Verify number of requests</td><td><code>"min_count": 1, "max_count": 5</code></td></tr>
+    <tr><td><code>assert_request_order</code></td><td>Verify request sequence</td><td><code>"expected_order": ["agentSlot", "meta-data.xml"]</code></td></tr>
+</table>
+
+<h2>5. Test Cases — Example JSON</h2>
+
+<h3>5.1 Request Validation</h3>
+<p>Verify what the agent sends &mdash; HTTP method, URL parameters, headers, body content.</p>
+<pre>
+// Verify agentSlot request is GET
+{"id": "TC_001", "action": "validate_request",
+ "url_pattern": "agentSlot", "method": "GET",
+ "description": "agentSlot: method is GET"}
+
+// Verify Authorization header has Basic auth
+{"id": "TC_002", "action": "validate_request",
+ "url_pattern": "agentSlot",
+ "header_name": "Authorization", "expected_value": "Basic ",
+ "validation_type": "startswith",
+ "description": "agentSlot: has Basic auth"}
+
+// Verify URL contains expected query parameter
+{"id": "TC_003", "action": "validate_request",
+ "url_pattern": "agentSlot",
+ "expected_value": "actionToCall=AgentOfset",
+ "validation_type": "contains",
+ "description": "agentSlot: URL has actionToCall param"}
+
+// Verify POST body contains expected field
+{"id": "TC_004", "action": "validate_request",
+ "url_pattern": "endpointdlp",
+ "body_pattern": "ResourceId",
+ "validation_type": "contains",
+ "description": "endpointdlp: body has ResourceId"}
+
+// Verify POST method on application control endpoint
+{"id": "TC_005", "action": "validate_request",
+ "url_pattern": "appctrl-new-storeapp-scan-data", "method": "POST",
+ "description": "appctrl store apps: method is POST"}
+</pre>
+
+<h3>5.2 Response Validation</h3>
+<p>Verify what the server replies &mdash; status code, response headers, body content.</p>
+<pre>
+// Verify response status code is 200
+{"id": "TC_010", "action": "validate_response",
+ "url_pattern": "agentSlot",
+ "expected_status": 200,
+ "description": "agentSlot: response 200 OK"}
+
+// Verify Content-Type header
+{"id": "TC_011", "action": "validate_response",
+ "url_pattern": "meta-data\\.xml",
+ "header_name": "Content-Type", "expected_value": "application/xml",
+ "validation_type": "contains",
+ "description": "meta-data.xml: Content-Type is XML"}
+
+// Verify response body contains expected XML element
+{"id": "TC_012", "action": "validate_response",
+ "url_pattern": "meta-data\\.xml",
+ "body_pattern": "DCServerInfo",
+ "validation_type": "contains",
+ "description": "meta-data.xml: body has DCServerInfo"}
+
+// Verify 404 response for missing endpoint
+{"id": "TC_013", "action": "validate_response",
+ "url_pattern": "boundary-list\\.xml",
+ "expected_status": 404, "continueOnFailure": true,
+ "description": "boundary-list.xml: expected 404"}
+
+// Verify JSON response body has expected key
+{"id": "TC_014", "action": "validate_response",
+ "url_pattern": "agent-security-setting\\.json",
+ "body_pattern": "SECRET_KEY",
+ "validation_type": "contains",
+ "description": "agent-security-setting: body has SECRET_KEY"}
+</pre>
+
+<h3>5.3 Request Count & Order</h3>
+<p>Verify how many requests were made and in what sequence.</p>
+<pre>
+// Verify at least 1 agentSlot request was captured
+{"id": "TC_020", "action": "assert_request_count",
+ "url_pattern": "agentSlot", "min_count": 1,
+ "description": "At least 1 agentSlot request"}
+
+// Verify total captured requests are between 10 and 30
+{"id": "TC_021", "action": "assert_request_count",
+ "url_pattern": ".*", "min_count": 10, "max_count": 30,
+ "description": "Total requests between 10 and 30"}
+
+// Verify request ordering: agentSlot must come before meta-data.xml
+{"id": "TC_022", "action": "assert_request_order",
+ "expected_order": ["agentSlot", "meta-data\\.xml", "agent-settings\\.xml"],
+ "description": "Order: agentSlot -> meta-data -> agent-settings"}
+</pre>
+
+<h3>5.4 Response Modification (Failure Simulation)</h3>
+<p>Inject custom responses to test agent error handling.</p>
+<pre>
+// Return 500 error on meta-data.xml (persistent)
+{"id": "RULE_001", "action": "modify_response",
+ "url_pattern": "meta-data\\.xml",
+ "inject_status": 500, "inject_body": "Internal Server Error",
+ "persistent": true,
+ "description": "Simulate server error on meta-data.xml"}
+
+// Return empty body on agent-settings.xml (one-shot)
+{"id": "RULE_002", "action": "modify_response",
+ "url_pattern": "agent-settings\\.xml",
+ "inject_status": 200, "inject_body": "",
+ "description": "Simulate empty config response"}
+
+// Block all applicationcontrol requests
+{"id": "RULE_003", "action": "block_request",
+ "url_pattern": "applicationcontrol",
+ "block_action": "block", "persistent": true,
+ "description": "Block all appctrl requests"}
+
+// Add 10 second delay to all requests (slow network)
+{"id": "RULE_004", "action": "block_request",
+ "url_pattern": ".*",
+ "block_action": "delay", "delay_ms": 10000, "persistent": true,
+ "description": "Simulate slow network"}
+</pre>
+
+<h3 class="page-break">5.5 Complete Test Flow (End-to-End Example)</h3>
+<pre>
+[
+  // ---- SETUP ----
+  {"id": "SETUP_001", "action": "install_certificate", "cert_action": "install",
+   "description": "Install mitmproxy CA cert"},
+
+  {"id": "SETUP_002", "action": "patch_registry",
+   "registry_key": "HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo",
+   "registry_action": "patch",
+   "old_values": ["server-hostname", "10.x.x.x", "8383"],
+   "new_values": ["127.0.0.1", "127.0.0.1", "8080"],
+   "description": "Redirect agent to proxy"},
+
+  {"id": "SETUP_003", "action": "start_proxy",
+   "listen_host": "127.0.0.1", "listen_port": 8080,
+   "mode": "reverse:https://10.x.x.x:8383", "ssl_insecure": true,
+   "description": "Start reverse proxy"},
+
+  {"id": "SETUP_004", "action": "clear_captures", "description": "Reset capture buffer"},
+
+  {"id": "SETUP_005", "action": "run_command",
+   "command_line": "\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\"",
+   "timeout": 30, "description": "Trigger agent config refresh"},
+
+  // ---- WAIT ----
+  {"id": "WAIT_001", "action": "wait_for_request",
+   "url_pattern": "agentSlot", "timeout": 180,
+   "description": "Wait for agentSlot request"},
+
+  // ---- VALIDATE ----
+  {"id": "TC_001", "action": "validate_request",
+   "url_pattern": "agentSlot", "method": "GET",
+   "description": "agentSlot: method is GET"},
+
+  {"id": "TC_002", "action": "validate_response",
+   "url_pattern": "agentSlot", "expected_status": 200,
+   "description": "agentSlot: response 200 OK"},
+
+  {"id": "TC_003", "action": "assert_request_count",
+   "url_pattern": ".*", "min_count": 1,
+   "description": "At least 1 request captured"},
+
+  // ---- SAVE ----
+  {"id": "SAVE_001", "action": "capture_traffic",
+   "capture_file": "Reports/test-traffic.json",
+   "description": "Save captured traffic"},
+
+  // ---- CLEANUP ----
+  {"id": "CLEANUP_001", "action": "patch_registry",
+   "registry_key": "HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo",
+   "registry_action": "restore", "continueOnFailure": true,
+   "description": "Restore registry"},
+
+  {"id": "CLEANUP_002", "action": "stop_proxy", "description": "Stop proxy"}
+]
+</pre>
+
+<h2>6. How to Run</h2>
+
+<h3>Run with Python</h3>
+<pre>
+:: Run as Administrator
+.venv\Scripts\python.exe main.py TestData\general_validation.json --show-all
+</pre>
+
+<h3>Run with EXE</h3>
+<pre>
+:: Run as Administrator
+CommunicationAutomation.exe TestData\general_validation.json --show-all
+</pre>
+
+<p><code>--show-all</code> prints every step result. Without it, only failures and the summary are shown.</p>
+
+<h2>7. Output Format</h2>
+<p>Output follows the <strong>GOAT server compatible</strong> format for integration with the test reporting system:</p>
+<pre>
+SETUP_001|PASSED|Certificate installed successfully
+SETUP_002|PASSED|Patched 6 values: DCNSLastAccessName -> 127.0.0.1
+TC_001|PASSED|Request found: GET /agentSlot...
+TC_002|PASSED|Header 'Authorization': Value starts with 'Basic '
+TC_003|PASSED|Response validated: status=200
+TC_009|PASSED|Request count assertion passed: 15 requests matching '.*'
+SUMMARY|Total:25|Passed:25|Failed:0
+</pre>
+
+<table>
+    <tr><th>Exit Code</th><th>Meaning</th></tr>
+    <tr><td>0</td><td>All tests passed</td></tr>
+    <tr><td>1</td><td>One or more tests failed</td></tr>
+    <tr><td>5</td><td>Test file not found</td></tr>
+    <tr><td>99</td><td>Critical error</td></tr>
+</table>
+
+<h2 class="page-break">8. Future Scope &mdash; Data Interruption & Failure Simulation</h2>
+
+<p>The framework already has <code>modify_response</code> and <code>block_request</code> actions built in. These enable <strong>data interruption</strong> &mdash; altering or blocking live traffic to simulate failure scenarios and test how the agent handles them. Below are planned use cases and ideas.</p>
+
+<h3>8.1 Already Available (Ready to Use)</h3>
+
+<table>
+    <tr><th>Action</th><th>What It Does</th><th>JSON Example</th></tr>
+    <tr>
+        <td><code>modify_response</code></td>
+        <td>Replace response status, body, or headers for matching requests</td>
+        <td><code>{"action": "modify_response", "url_pattern": "meta-data\\.xml", "inject_status": 500, "inject_body": "Internal Server Error"}</code></td>
+    </tr>
+    <tr>
+        <td><code>block_request</code></td>
+        <td>Completely block or delay matching requests</td>
+        <td><code>{"action": "block_request", "url_pattern": "agentSlot", "block_action": "block"}</code></td>
+    </tr>
+    <tr>
+        <td><code>block_request</code> (delay)</td>
+        <td>Add artificial latency to simulate slow network</td>
+        <td><code>{"action": "block_request", "url_pattern": ".*", "block_action": "delay", "delay_ms": 5000}</code></td>
+    </tr>
+</table>
+<p>Rules can be <code>"persistent": true</code> (apply to every matching request) or one-shot (apply once then auto-remove).</p>
+
+<h3>8.2 Failure Simulation Scenarios</h3>
+
+<div class="section-box">
+<strong>Server Error Responses</strong> &mdash; Test how the agent handles HTTP errors from the server.
+</div>
+
+<table>
+    <tr><th>Scenario</th><th>How</th><th>What to Observe</th></tr>
+    <tr>
+        <td>Server returns 500 on agentSlot</td>
+        <td>Inject status 500 on <code>agentSlot</code></td>
+        <td>Does the agent retry? How many times? What interval?</td>
+    </tr>
+    <tr>
+        <td>Server returns 503 Service Unavailable</td>
+        <td>Inject status 503 on all endpoints</td>
+        <td>Does the agent back off? Does it queue requests?</td>
+    </tr>
+    <tr>
+        <td>Server returns 401 Unauthorized</td>
+        <td>Inject status 401 on <code>agentSlot</code></td>
+        <td>Does the agent re-authenticate? Does it refresh credentials?</td>
+    </tr>
+    <tr>
+        <td>Server returns 404 on config endpoints</td>
+        <td>Inject status 404 on <code>agent-settings.xml</code></td>
+        <td>Does the agent use cached config? Does it crash?</td>
+    </tr>
+</table>
+
+<div class="section-box">
+<strong>Response Body Manipulation</strong> &mdash; Alter response content to test agent behavior with unexpected data.
+</div>
+
+<table>
+    <tr><th>Scenario</th><th>How</th><th>What to Observe</th></tr>
+    <tr>
+        <td>Change server address in meta-data.xml</td>
+        <td>Inject body with modified <code>DCServerInfo</code> pointing to a different IP</td>
+        <td>Does the agent follow the new address? Does it validate?</td>
+    </tr>
+    <tr>
+        <td>Empty response body</td>
+        <td>Inject empty body on <code>agent-settings.xml</code></td>
+        <td>Does the agent crash on null/empty XML? Does it fallback?</td>
+    </tr>
+    <tr>
+        <td>Malformed XML/JSON response</td>
+        <td>Inject invalid XML like <code>&lt;broken&gt;&lt;/wrong&gt;</code></td>
+        <td>Does the agent handle parse errors gracefully?</td>
+    </tr>
+    <tr>
+        <td>Inject IS_DELETED=true in resource.xml</td>
+        <td>Inject body with <code>IS_DELETED</code> set to <code>true</code></td>
+        <td>Does the agent uninstall itself? What cleanup happens?</td>
+    </tr>
+    <tr>
+        <td>Change RESOURCE_ID in agentSlot response</td>
+        <td>Inject body with different resource ID</td>
+        <td>Does the agent accept it? Does it conflict with local state?</td>
+    </tr>
+    <tr>
+        <td>Alter security settings</td>
+        <td>Inject modified <code>SECRET_KEY</code> in agent-security-setting.json</td>
+        <td>Does the agent rotate keys? Does auth break?</td>
+    </tr>
+    <tr>
+        <td>Inject extra product codes</td>
+        <td>Add unknown ProductCodes in <code>meta-data.xml</code></td>
+        <td>Does the agent ignore unknown codes or attempt to process them?</td>
+    </tr>
+</table>
+
+<div class="section-box">
+<strong>Network Failure Simulation</strong> &mdash; Simulate network-level issues.
+</div>
+
+<table>
+    <tr><th>Scenario</th><th>How</th><th>What to Observe</th></tr>
+    <tr>
+        <td>Complete server outage</td>
+        <td>Block ALL requests with <code>url_pattern: ".*"</code></td>
+        <td>Agent retry behavior, timeout handling, local caching</td>
+    </tr>
+    <tr>
+        <td>Slow network (high latency)</td>
+        <td>Delay all requests by 10-30 seconds</td>
+        <td>Does the agent timeout? Does it retry on timeout?</td>
+    </tr>
+    <tr>
+        <td>Intermittent connectivity</td>
+        <td>Block requests for 60s, unblock, block again</td>
+        <td>Does the agent recover after connection restore?</td>
+    </tr>
+    <tr>
+        <td>Selective endpoint failure</td>
+        <td>Block only <code>applicationcontrol</code> endpoints</td>
+        <td>Does the agent continue with other operations?</td>
+    </tr>
+</table>
+
+<div class="section-box">
+<strong>Data Integrity & Security Testing</strong> &mdash; Test agent resilience to tampered data.
+</div>
+
+<table>
+    <tr><th>Scenario</th><th>How</th><th>What to Observe</th></tr>
+    <tr>
+        <td>Inject malicious content in config</td>
+        <td>Inject script/command in XML config fields</td>
+        <td>Does the agent sanitize inputs? Injection vulnerability?</td>
+    </tr>
+    <tr>
+        <td>Oversized response body</td>
+        <td>Inject very large body (10MB+)</td>
+        <td>Does the agent handle memory properly? Does it crash?</td>
+    </tr>
+    <tr>
+        <td>Wrong Content-Type header</td>
+        <td>Send JSON body with <code>Content-Type: application/xml</code></td>
+        <td>Does the agent check Content-Type before parsing?</td>
+    </tr>
+    <tr>
+        <td>Expired/invalid timestamps</td>
+        <td>Inject past dates in config responses</td>
+        <td>Does the agent handle stale data correctly?</td>
+    </tr>
+</table>
+
+<h3>8.3 Example: Failure Simulation Test Case (JSON)</h3>
+
+<pre>
+[
+    // ... Setup steps (cert, registry, proxy, OS lock) ...
+
+    {"id": "RULE_001", "action": "modify_response",
+     "url_pattern": "meta-data\\.xml",
+     "inject_status": 500,
+     "inject_body": "Internal Server Error",
+     "persistent": true,
+     "description": "Simulate server error on meta-data.xml"},
+
+    {"id": "TRIGGER", "action": "run_command",
+     "command_line": "\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\"",
+     "timeout": 30, "description": "Trigger agent"},
+
+    {"id": "WAIT_001", "action": "wait_for_request",
+     "url_pattern": "meta-data\\.xml", "timeout": 120,
+     "description": "Wait for agent to hit meta-data.xml"},
+
+    {"id": "TC_001", "action": "validate_response",
+     "url_pattern": "meta-data\\.xml", "expected_status": 500,
+     "description": "Verify agent received 500 error"},
+
+    {"id": "TC_002", "action": "assert_request_count",
+     "url_pattern": "meta-data\\.xml", "min_count": 2,
+     "continueOnFailure": true,
+     "description": "Verify agent retried after 500 error"},
+
+    // ... Cleanup steps ...
+]
+</pre>
+
+<h3>8.4 Future Enhancements Needed</h3>
+<table>
+    <tr><th>Enhancement</th><th>Description</th><th>Value</th></tr>
+    <tr>
+        <td>Conditional rules</td>
+        <td>Apply rules only on Nth request (e.g., fail on 3rd attempt)</td>
+        <td>Simulate intermittent failures</td>
+    </tr>
+    <tr>
+        <td>Response body patching</td>
+        <td>Modify specific fields in XML/JSON without replacing entire body</td>
+        <td>Targeted field manipulation (e.g., change only DCServerInfo IP)</td>
+    </tr>
+    <tr>
+        <td>Rule scheduling</td>
+        <td>Activate/deactivate rules at specific times or after N seconds</td>
+        <td>Simulate server recovery after outage</td>
+    </tr>
+    <tr>
+        <td>Connection drop simulation</td>
+        <td>Close TCP connection mid-transfer (partial response)</td>
+        <td>Test agent handling of incomplete data</td>
+    </tr>
+    <tr>
+        <td>SSL/TLS error injection</td>
+        <td>Return invalid certificates or force TLS handshake failures</td>
+        <td>Test agent certificate validation</td>
+    </tr>
+    <tr>
+        <td>Bandwidth throttling</td>
+        <td>Limit response transfer speed (e.g., 10 KB/s)</td>
+        <td>Test agent behavior on slow connections</td>
+    </tr>
+    <tr>
+        <td>Request replay</td>
+        <td>Re-send previously captured requests to the server</td>
+        <td>Regression testing against server changes</td>
+    </tr>
+    <tr>
+        <td>Response recording + replay</td>
+        <td>Save server responses and replay them without live server</td>
+        <td>Offline testing, mock server mode</td>
+    </tr>
+</table>
+
+<h2>9. Technology Stack</h2>
+<table>
+    <tr><th>Component</th><th>Technology</th></tr>
+    <tr><td>Language</td><td>Python 3.12</td></tr>
+    <tr><td>Proxy Engine</td><td>mitmproxy (DumpMaster)</td></tr>
+    <tr><td>Build Tool</td><td>Nuitka (single EXE)</td></tr>
+    <tr><td>Platform</td><td>Windows (requires Administrator for cert/registry/firewall)</td></tr>
+    <tr><td>Test Format</td><td>JSON-driven (no code changes for new test cases)</td></tr>
+    <tr><td>Output Format</td><td>GOAT server compatible</td></tr>
+</table>
+
+<div class="footer">
+    CommunicationAutomation &mdash; UEMS Agent Automation &mdash; February 2026
+</div>
+
+</body>
+</html>

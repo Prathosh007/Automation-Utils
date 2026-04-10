@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CommunicationAutomation - Detailed Architecture</title>
+<style>
+    @page { margin: 18mm; }
+    body { font-family: Segoe UI, Calibri, Arial, sans-serif; color: #222; line-height: 1.6; max-width: 920px; margin: 0 auto; padding: 30px; }
+    h1 { color: #1a5276; border-bottom: 3px solid #1a5276; padding-bottom: 8px; font-size: 24px; }
+    h2 { color: #2c3e50; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; margin-top: 30px; font-size: 18px; }
+    h3 { color: #34495e; font-size: 15px; margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+    th { background: #2c3e50; color: #fff; padding: 8px 12px; text-align: left; }
+    td { border: 1px solid #ddd; padding: 7px 12px; vertical-align: top; }
+    tr:nth-child(even) { background: #f8f9fa; }
+    code { background: #ecf0f1; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 12px; }
+    pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-size: 12px; overflow-x: auto; white-space: pre; }
+    .box { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 12px 16px; margin: 12px 0; border-radius: 3px; }
+    .box-warn { background: #fef9e7; border-left: 4px solid #f39c12; padding: 12px 16px; margin: 12px 0; border-radius: 3px; }
+    .box-green { background: #d5f5e3; border-left: 4px solid #27ae60; padding: 12px 16px; margin: 12px 0; border-radius: 3px; }
+    p { margin: 8px 0; font-size: 14px; }
+    li { font-size: 14px; margin: 4px 0; }
+    .page-break { page-break-before: always; }
+    .footer { margin-top: 40px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 11px; color: #888; text-align: center; }
+    .diagram { background: #1a1a2e; color: #16c784; padding: 18px; border-radius: 6px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.5; white-space: pre; overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<h1>CommunicationAutomation &mdash; Detailed Architecture</h1>
+
+<!-- ===== 1. SYSTEM OVERVIEW ===== -->
+<h2>1. System Overview</h2>
+
+<p>CommunicationAutomation is a <strong>JSON-driven test automation framework</strong> that uses a man-in-the-middle (MITM) proxy to intercept, capture, and validate UEMS agent HTTPS communication. It is built in Python and uses mitmproxy as the proxy engine.</p>
+
+<div class="diagram">
+ +------------------+          +------------------+          +------------------+
+ |                  |  HTTPS   |                  |  HTTPS   |                  |
+ |   UEMS Agent     | -------> |   mitmproxy      | -------> |   DC Server      |
+ |   (on machine)   |          |   (127.0.0.1:    |          |   (remote)       |
+ |                  | <------- |    8080)          | <------- |                  |
+ +------------------+          +--------+---------+          +------------------+
+                                        |
+                                        | captures every
+                                        | request/response
+                                        v
+                               +--------+---------+
+                               |                  |
+                               |  TrafficStore    |
+                               |  (in-memory)     |
+                               |                  |
+                               +--------+---------+
+                                        |
+                                        | queried by
+                                        v
+                               +--------+---------+
+                               |                  |
+                               |  Test Engine     |
+                               |  (validates,     |
+                               |   asserts,       |
+                               |   reports)       |
+                               |                  |
+                               +------------------+
+</div>
+
+<!-- ===== 2. LAYERED ARCHITECTURE ===== -->
+<h2>2. Layered Architecture</h2>
+
+<div class="diagram">
+ +========================================================================+
+ |                          main.py (Entry Point)                         |
+ |   Parses CLI args, creates TestEngine, returns exit code               |
+ +========================================================================+
+         |
+         v
+ +========================================================================+
+ |                      CORE LAYER (core/)                                |
+ |                                                                        |
+ |  TestEngine          ActionRegistry         BaseAction                 |
+ |  - loads JSON        - maps action names    - abstract execute()       |
+ |  - iterates cmds     - returns handler      - run() template method    |
+ |  - tracks results    - 18 registered        - handle_success/failure   |
+ |                        actions                                         |
+ |                                                                        |
+ |  Command             CommandResult          TestResult                 |
+ |  - dataclass         - dataclass            - aggregate result         |
+ |  - from_dict()       - success/failure      - pass/fail counts         |
+ |  - camelCase mapping - duration, data       - command_results[]        |
+ +========================================================================+
+         |
+         v
+ +========================================================================+
+ |                     ACTION LAYER (actions/)                            |
+ |                                                                        |
+ |  18 action classes, each extends BaseAction:                           |
+ |                                                                        |
+ |  Proxy:     start_proxy, stop_proxy, configure_proxy                   |
+ |  Cert:      install_certificate, load_client_cert                      |
+ |  OS:        patch_registry, run_command, manage_service                 |
+ |  Wait:      wait_for_request, wait_for_interrupt                       |
+ |  Validate:  validate_request, validate_response                        |
+ |  Assert:    assert_request_count, assert_request_order                 |
+ |  Modify:    modify_response, block_request                             |
+ |  Capture:   capture_traffic, clear_captures                            |
+ +========================================================================+
+         |
+         v
+ +========================================================================+
+ |                     PROXY LAYER (proxy/)                               |
+ |                                                                        |
+ |  ProxyManager        UEMSAddon              TrafficStore               |
+ |  - start/stop        - request() hook       - thread-safe storage      |
+ |  - daemon thread     - response() hook      - wait/notify pattern      |
+ |  - asyncio.run()     - error() hook         - regex matching           |
+ |                      - applies rules                                   |
+ |                                                                        |
+ |  ResponseRuleEngine  CertificateManager                                |
+ |  - add/match rules   - certutil install     +-- CapturedFlow           |
+ |  - one-shot/persist  - certutil remove      |   (dataclass)            |
+ |  - block/delay/mod   - find mitmproxy CA    +-- url, method, headers   |
+ |                                             |   body, status           |
+ +========================================================================+
+         |
+         v
+ +========================================================================+
+ |                     UTILS LAYER (utils/)                               |
+ |                                                                        |
+ |  Logger              VariableContext        PatternMatcher             |
+ |  - GOAT output       - {{step.prop}}        - regex matching           |
+ |  - file logging      - store results        - validate_value()         |
+ |  - SUMMARY line      - substitute cmds      - 7 validation types      |
+ +========================================================================+
+</div>
+
+<!-- ===== 3. EXECUTION FLOW ===== -->
+<h2 class="page-break">3. Execution Flow</h2>
+
+<p>When you run <code>CommunicationAutomation.exe test.json --show-all</code>, the following happens:</p>
+
+<div class="diagram">
+ main.py
+   |
+   |  1. Parse CLI args (json_path, --show-all)
+   |  2. Create TestEngine(log_dir="Logs")
+   |
+   v
+ TestEngine.execute_test_suite(json_path)
+   |
+   |  3. Load JSON file
+   |  4. Parse array of command dicts
+   |
+   v
+ FOR EACH command in JSON array:
+   |
+   |  5. VariableContext.substitute_command(raw_dict)
+   |     - replaces {{STEP_ID.property}} placeholders
+   |
+   |  6. Command.from_dict(processed_dict)
+   |     - maps camelCase JSON keys to snake_case fields
+   |
+   |  7. ActionRegistry.get_action(command.action)
+   |     - looks up "validate_request" -> ValidateRequestAction instance
+   |
+   |  8. action.run(command, context)
+   |     |
+   |     |  BaseAction.run() template method:
+   |     |    a. validate_command() - check required fields
+   |     |    b. log_execution()   - write to log file
+   |     |    c. start timer
+   |     |    d. execute()         - ACTION-SPECIFIC LOGIC
+   |     |    e. stop timer
+   |     |    f. return CommandResult
+   |     |
+   |     v
+   |  9. Store result in VariableContext
+   |     - {{TC_001.success}}, {{TC_001.data}}, etc.
+   |
+   | 10. Check: failed AND continueOnFailure=false?
+   |     - YES: break loop
+   |     - NO:  continue to next command
+   |
+   v
+ 11. Logger.output_summary(total, passed, failed)
+     - prints: SUMMARY|Total:25|Passed:23|Failed:2
+     - returns exit code 0 (all pass) or 1 (any fail)
+</div>
+
+<!-- ===== 4. COMPONENT DETAILS ===== -->
+<h2>4. Component Details</h2>
+
+<!-- 4.1 TestEngine -->
+<h3>4.1 TestEngine (core/test_engine.py)</h3>
+<p>The orchestrator. Loads JSON, iterates commands, dispatches to actions, collects results.</p>
+
+<table>
+    <tr><th>Responsibility</th><th>How</th></tr>
+    <tr><td>Load test definition</td><td>Reads JSON file, supports flat array <code>[...]</code> or wrapped <code>{"commands": [...]}</code></td></tr>
+    <tr><td>Variable substitution</td><td>Calls <code>VariableContext.substitute_command()</code> before parsing each command</td></tr>
+    <tr><td>Command dispatch</td><td>Looks up action handler from <code>ActionRegistry</code>, calls <code>action.run()</code></td></tr>
+    <tr><td>Flow control</td><td>Stops on first failure unless <code>continueOnFailure: true</code></td></tr>
+    <tr><td>Shared context</td><td>Passes <code>context</code> dict to all actions &mdash; holds proxy_manager, traffic_store, rule_engine</td></tr>
+    <tr><td>Result tracking</td><td>Appends every <code>CommandResult</code> to <code>TestResult.command_results[]</code></td></tr>
+    <tr><td>Output</td><td>Prints GOAT-compatible <code>SUMMARY|Total:N|Passed:N|Failed:N</code></td></tr>
+</table>
+
+<!-- 4.2 Command Model -->
+<h3>4.2 Command Model (core/models.py)</h3>
+<p>A single dataclass that holds ALL possible fields for every action type. The <code>from_dict()</code> class method maps camelCase JSON keys to snake_case Python attributes.</p>
+
+<div class="box">
+<strong>Why one big dataclass?</strong> Keeps the JSON format flat and simple. Each action reads only the fields it needs and ignores the rest. No inheritance hierarchy, no polymorphic deserialization needed.
+</div>
+
+<p>Key field groups:</p>
+<table>
+    <tr><th>Group</th><th>Fields</th><th>Used By</th></tr>
+    <tr><td>Identity</td><td><code>id</code>, <code>action</code>, <code>description</code></td><td>All actions</td></tr>
+    <tr><td>Control</td><td><code>continue_on_failure</code>, <code>timeout</code></td><td>All actions</td></tr>
+    <tr><td>Proxy</td><td><code>listen_host</code>, <code>listen_port</code>, <code>mode</code>, <code>ssl_insecure</code></td><td>start_proxy</td></tr>
+    <tr><td>Matching</td><td><code>url_pattern</code>, <code>method</code>, <code>header_name</code>, <code>body_pattern</code></td><td>validate_*, wait_*, assert_*</td></tr>
+    <tr><td>Validation</td><td><code>expected_value</code>, <code>expected_status</code>, <code>validation_type</code>, <code>case_sensitive</code></td><td>validate_request, validate_response</td></tr>
+    <tr><td>Counting</td><td><code>min_count</code>, <code>max_count</code>, <code>expected_count</code>, <code>expected_order</code></td><td>assert_request_count, assert_request_order</td></tr>
+    <tr><td>Injection</td><td><code>inject_status</code>, <code>inject_body</code>, <code>inject_headers</code>, <code>persistent</code></td><td>modify_response</td></tr>
+    <tr><td>Blocking</td><td><code>block_action</code>, <code>delay_ms</code></td><td>block_request</td></tr>
+    <tr><td>Registry</td><td><code>registry_key</code>, <code>registry_action</code>, <code>old_values</code>, <code>new_values</code></td><td>patch_registry</td></tr>
+    <tr><td>OS Command</td><td><code>command_line</code>, <code>working_dir</code></td><td>run_command</td></tr>
+    <tr><td>Capture</td><td><code>capture_file</code>, <code>capture_format</code></td><td>capture_traffic</td></tr>
+</table>
+
+<!-- 4.3 ActionRegistry -->
+<h3>4.3 ActionRegistry (core/action_registry.py)</h3>
+<p>A simple dictionary mapping action name strings to singleton handler instances.</p>
+
+<div class="diagram">
+ ActionRegistry._actions = {
+     "start_proxy"          -> StartProxyAction()
+     "stop_proxy"           -> StopProxyAction()
+     "install_certificate"  -> InstallCertificateAction()
+     "patch_registry"       -> PatchRegistryAction()
+     "run_command"          -> RunCommandAction()
+     "wait_for_request"     -> WaitForRequestAction()
+     "wait_for_interrupt"   -> WaitForInterruptAction()
+     "validate_request"     -> ValidateRequestAction()
+     "validate_response"    -> ValidateResponseAction()
+     "modify_response"      -> ModifyResponseAction()
+     "block_request"        -> BlockRequestAction()
+     "assert_request_count" -> AssertRequestCountAction()
+     "assert_request_order" -> AssertRequestOrderAction()
+     "capture_traffic"      -> CaptureTrafficAction()
+     "clear_captures"       -> ClearCapturesAction()
+     ... (18 total)
+ }
+
+ get_action("validate_request") -> returns ValidateRequestAction instance
+</div>
+
+<div class="box-green">
+<strong>Extensibility:</strong> To add a new action, create a new class in <code>actions/</code>, extend <code>BaseAction</code>, implement <code>execute()</code>, and register it in <code>ActionRegistry.__init__()</code>. No other code changes needed.
+</div>
+
+<!-- 4.4 BaseAction -->
+<h3 class="page-break">4.4 BaseAction (core/base_action.py)</h3>
+<p>Abstract base class using the <strong>Template Method</strong> design pattern.</p>
+
+<div class="diagram">
+ BaseAction.run(command, context)          &lt;-- Template Method
+   |
+   +-- validate_command(command)           &lt;-- Override in subclass
+   |     returns True/False
+   |
+   +-- log_execution(command)              &lt;-- Logs to file
+   |
+   +-- start timer
+   |
+   +-- execute(command, context)           &lt;-- ABSTRACT: subclass implements
+   |     |
+   |     +-- handle_success(command, result, remarks)
+   |     |     - result.success = True
+   |     |     - Logger.output_remark(id, True, remarks)
+   |     |
+   |     +-- handle_failure(command, result, error)
+   |           - result.success = False
+   |           - Logger.output_remark(id, False, error)
+   |
+   +-- stop timer
+   |
+   +-- return CommandResult
+</div>
+
+<p>Every action only needs to implement <code>execute()</code>. Timing, logging, error handling, and output formatting are handled by the base class.</p>
+
+<!-- ===== 5. PROXY LAYER ===== -->
+<h2>5. Proxy Layer &mdash; How Traffic Capture Works</h2>
+
+<h3>5.1 ProxyManager (proxy/proxy_manager.py)</h3>
+<p>Manages the mitmproxy <code>DumpMaster</code> lifecycle.</p>
+
+<div class="diagram">
+ Main Thread                          Daemon Thread (mitmproxy-thread)
+ -----------                          ---------------------------------
+ ProxyManager.start()
+   |
+   +-- create threading.Event()
+   +-- start daemon thread ---------> _run_proxy()
+   +-- wait for Event (15s timeout)      |
+   |                                     +-- asyncio.run(_async_run_proxy())
+   |                                           |
+   |                                           +-- create Options(mode, port, ...)
+   |                                           +-- create DumpMaster(opts)
+   |                                           +-- add UEMSAddon (captures traffic)
+   |                                           +-- add _StartupNotifier
+   |                                           |     |
+   |                                           |     +-- running() hook fires
+   |   Event.set() <-------------------------- |         -> sets Event
+   |                                           |
+   +-- proxy is ready!                         +-- await master.run()
+                                                    (blocks until shutdown)
+
+ ProxyManager.stop()
+   |
+   +-- master.shutdown() ----------------> DumpMaster exits run()
+   +-- thread.join(10s)                    Thread ends
+</div>
+
+<div class="box-warn">
+<strong>Key design decision:</strong> DumpMaster must be created inside an <code>async</code> context because it calls <code>asyncio.get_running_loop()</code> internally. That's why we use <code>asyncio.run()</code> with an <code>async</code> helper method, not just a plain thread target.
+</div>
+
+<h3>5.2 UEMSAddon (proxy/addon.py)</h3>
+<p>The mitmproxy addon that hooks into every HTTP flow.</p>
+
+<div class="diagram">
+ Incoming Request
+   |
+   v
+ UEMSAddon.request(flow)
+   |
+   +-- Check ResponseRuleEngine for matching rule
+   |     |
+   |     +-- rule.block = True?
+   |     |     -> Return 502 "Blocked by UEMS proxy automation"
+   |     |     -> flow.response set, request never reaches server
+   |     |
+   |     +-- rule.delay_ms > 0?
+   |     |     -> time.sleep(delay_ms / 1000)
+   |     |
+   |     +-- rule.inject_status or inject_body?
+   |           -> Create synthetic Response (status, body, headers)
+   |           -> flow.response set, request never reaches server
+   |
+   +-- No rule / delay only -> request forwarded to real server
+   |
+   v
+ Server responds (or synthetic response was injected)
+   |
+   v
+ UEMSAddon.response(flow)
+   |
+   +-- _capture_flow(flow)
+         -> Extract URL, method, headers, body from request
+         -> Extract status, headers, body from response
+         -> Create CapturedFlow dataclass
+         -> TrafficStore.add_flow(captured)
+
+ If upstream connection fails (e.g. TLS error):
+   |
+   v
+ UEMSAddon.error(flow)
+   |
+   +-- _capture_flow(flow, is_error=True)
+         -> Still captures the request data
+         -> Response body = "&lt;proxy error: ...&gt;"
+</div>
+
+<h3>5.3 TrafficStore (proxy/traffic_store.py)</h3>
+<p>Thread-safe in-memory storage for captured flows with a <strong>wait/notify</strong> pattern.</p>
+
+<div class="diagram">
+ TrafficStore
+ +------------------------------------------+
+ |  _lock: threading.Lock                   |
+ |  _flows: list[CapturedFlow]             |   &lt;-- All captured traffic
+ |  _waiters: list[(pattern, method, Event)]|   &lt;-- Pending wait_for_request
+ +------------------------------------------+
+
+ add_flow(captured):
+   1. Acquire lock
+   2. Append to _flows
+   3. For each waiter: if pattern matches -> event.set()
+   4. Remove notified waiters
+   5. Release lock
+
+ wait_for_request(pattern, timeout):
+   1. Acquire lock
+   2. Check existing flows (reversed) for match
+      - Found -> return immediately
+   3. Register waiter: (pattern, method, Event)
+   4. Release lock
+   5. event.wait(timeout)      &lt;-- blocks calling thread
+   6. If event set -> find and return matching flow
+      If timeout  -> return None
+
+ get_latest_flow(pattern):
+   - Iterate _flows reversed, return first match
+
+ count(pattern):
+   - Count matching flows
+
+ get_all_flows():
+   - Return copy of all flows
+</div>
+
+<div class="box-green">
+<strong>Wait/Notify pattern:</strong> The <code>wait_for_request</code> action blocks the test engine thread until a matching request arrives on the proxy thread. This is how the test waits for the agent to make specific requests without polling.
+</div>
+
+<h3 class="page-break">5.4 ResponseRuleEngine (proxy/response_rules.py)</h3>
+<p>Manages rules for blocking, delaying, or modifying responses.</p>
+
+<div class="diagram">
+ ResponseRuleEngine
+ +-------------------------------------------+
+ |  _rules: list[ResponseRule]               |
+ +-------------------------------------------+
+ |  add_rule(rule)                           |   &lt;-- Called by modify_response / block_request actions
+ |  get_matching_rule(url, method)           |   &lt;-- Called by UEMSAddon.request()
+ |    - returns first matching rule          |
+ |    - one-shot rules removed after firing  |
+ |    - persistent rules stay                |
+ |  clear_rules()                            |
+ +-------------------------------------------+
+
+ ResponseRule:
+   url_pattern   - regex to match URL
+   method        - HTTP method filter
+   inject_status - replace status code (e.g. 500)
+   inject_body   - replace response body
+   inject_headers- replace/add response headers
+   block         - block request entirely (502)
+   delay_ms      - add artificial latency
+   persistent    - true=apply to all matches, false=one-shot
+</div>
+
+<!-- ===== 6. UTILS LAYER ===== -->
+<h2>6. Utils Layer</h2>
+
+<h3>6.1 Logger (utils/logger.py)</h3>
+<p>Dual output: GOAT-compatible stdout + timestamped log file.</p>
+
+<div class="diagram">
+ STDOUT (GOAT format):
+   TC_001|PASSED|agentSlot: method is GET
+   TC_002|FAILED|Failed: Expected status 200, got 401
+   SUMMARY|Total:10|Passed:8|Failed:2
+
+ Log File (Logs/execution-20260223_143022.log):
+   [2026-02-23 14:30:22.123] Logger initialized
+   [2026-02-23 14:30:22.456] EXECUTING: start_proxy - Start reverse proxy
+   [2026-02-23 14:30:23.789] SUCCESS: SETUP_003 - Proxy started on 127.0.0.1:8080
+   [2026-02-23 14:30:45.012] FAILED: TC_002 - Expected status 200, got 401
+</div>
+
+<p><code>--show-all</code> flag: By default, only FAILED lines print to stdout. With <code>--show-all</code>, PASSED lines also print.</p>
+
+<h3>6.2 VariableContext (utils/variable_context.py)</h3>
+<p>Enables cross-step data passing using <code>{{stepId.property}}</code> placeholders.</p>
+
+<div class="diagram">
+ Step SETUP_003 completes -> VariableContext stores:
+   SETUP_003.success  = "True"
+   SETUP_003.data     = (action-specific data)
+   SETUP_003.message  = "Proxy started on 127.0.0.1:8080"
+   SETUP_003.duration = "0:00:01.234"
+
+ Later step can reference:
+   {"url_pattern": "{{SETUP_003.data}}"}
+   -> substituted before Command.from_dict()
+</div>
+
+<h3>6.3 PatternMatcher (utils/pattern_matcher.py)</h3>
+<p>Two functions used across the entire framework:</p>
+
+<table>
+    <tr><th>Function</th><th>Used By</th><th>Purpose</th></tr>
+    <tr><td><code>matches_pattern(text, regex)</code></td><td>TrafficStore, ResponseRuleEngine, AssertRequestOrder</td><td>Check if URL matches a regex pattern</td></tr>
+    <tr><td><code>validate_value(actual, expected, type)</code></td><td>ValidateRequest, ValidateResponse</td><td>Compare values using 7 validation types: contains, exact, startswith, endswith, regex, notempty, isempty</td></tr>
+</table>
+
+<!-- ===== 7. SHARED CONTEXT ===== -->
+<h2 class="page-break">7. Shared Context &mdash; How Components Connect</h2>
+
+<p>The <code>context</code> dict is the glue between all actions. It flows through every action's <code>execute(command, context)</code> call.</p>
+
+<div class="diagram">
+ context = {}   (created empty by TestEngine)
+       |
+       v
+ StartProxyAction.execute():
+   - Creates ProxyManager
+   - ProxyManager creates TrafficStore + ResponseRuleEngine
+   - context["proxy_manager"] = proxy_manager
+   - context["traffic_store"] = proxy_manager.traffic_store
+   - context["rule_engine"]   = proxy_manager.rule_engine
+       |
+       v
+ WaitForRequestAction.execute():
+   - store = context["traffic_store"]
+   - store.wait_for_request("agentSlot", timeout=180)
+       |
+       v
+ ValidateRequestAction.execute():
+   - store = context["traffic_store"]
+   - flow = store.get_latest_flow("agentSlot")
+   - validate flow.request_method == "GET"
+       |
+       v
+ ModifyResponseAction.execute():
+   - engine = context["rule_engine"]
+   - engine.add_rule(ResponseRule(url="meta-data", inject_status=500))
+       |
+       v
+ CaptureTrafficAction.execute():
+   - store = context["traffic_store"]
+   - flows = store.get_all_flows()
+   - write to JSON file
+       |
+       v
+ StopProxyAction.execute():
+   - pm = context["proxy_manager"]
+   - pm.stop()
+</div>
+
+<!-- ===== 8. THREADING MODEL ===== -->
+<h2>8. Threading Model</h2>
+
+<div class="diagram">
+ +----------------------------------------------------------+
+ |  MAIN THREAD                                             |
+ |                                                          |
+ |  main.py -> TestEngine -> Actions (sequential)           |
+ |    |                                                     |
+ |    +-- wait_for_request: blocks on Event.wait()          |
+ |    +-- wait_for_interrupt: blocks on stop_event.wait()   |
+ |    +-- validate_*: reads from TrafficStore               |
+ +---------------------------+------------------------------+
+                             |
+                    context dict (shared)
+                             |
+ +---------------------------+------------------------------+
+ |  DAEMON THREAD (mitmproxy-thread)                        |
+ |                                                          |
+ |  asyncio event loop                                      |
+ |    +-- DumpMaster.run()                                  |
+ |    +-- UEMSAddon.request()  -> check rules               |
+ |    +-- UEMSAddon.response() -> TrafficStore.add_flow()   |
+ |    +-- UEMSAddon.error()    -> TrafficStore.add_flow()   |
+ +----------------------------------------------------------+
+
+ Thread safety:
+   - TrafficStore: protected by threading.Lock
+   - ResponseRuleEngine: protected by threading.Lock
+   - Event objects: thread-safe by design
+   - context dict: only written by start_proxy (before other actions read it)
+</div>
+
+<!-- ===== 9. OS INTEGRATION ===== -->
+<h2>9. OS Integration Layer</h2>
+
+<p>Several actions interact directly with the Windows operating system:</p>
+
+<table>
+    <tr><th>Action</th><th>OS Mechanism</th><th>How</th></tr>
+    <tr><td><code>install_certificate</code></td><td>Windows Certificate Store</td><td><code>certutil -addstore Root &lt;cert.pem&gt;</code></td></tr>
+    <tr><td><code>patch_registry</code></td><td>Windows Registry</td><td><code>winreg.OpenKey()</code>, <code>EnumValue()</code>, <code>SetValueEx()</code></td></tr>
+    <tr><td><code>run_command</code></td><td>Process execution</td><td><code>subprocess.run(command_line, shell=True)</code></td></tr>
+    <tr><td><code>manage_service</code></td><td>Windows Services</td><td><code>net start/stop &lt;service&gt;</code></td></tr>
+</table>
+
+<p>OS-level traffic lock uses <code>run_command</code> to execute:</p>
+<table>
+    <tr><th>Lock</th><th>Command</th></tr>
+    <tr><td>Hosts file</td><td><code>powershell Add-Content hosts '127.0.0.1 hostname'</code></td></tr>
+    <tr><td>Port proxy</td><td><code>netsh interface portproxy add v4tov4 ...</code></td></tr>
+    <tr><td>Firewall</td><td><code>netsh advfirewall firewall add rule ...</code></td></tr>
+    <tr><td>DNS flush</td><td><code>ipconfig /flushdns</code></td></tr>
+</table>
+
+<!-- ===== 10. DATA FLOW ===== -->
+<h2 class="page-break">10. Complete Data Flow &mdash; End to End</h2>
+
+<div class="diagram">
+ 1. User runs: CommunicationAutomation.exe test.json --show-all
+
+ 2. main.py reads test.json
+    [
+      {"id":"S1", "action":"start_proxy", "mode":"reverse:https://172.24.148.221:8383"},
+      {"id":"W1", "action":"wait_for_request", "url_pattern":"agentSlot", "timeout":180},
+      {"id":"T1", "action":"validate_request", "url_pattern":"agentSlot", "method":"GET"},
+      {"id":"T2", "action":"validate_response", "url_pattern":"agentSlot", "expected_status":200},
+      {"id":"S2", "action":"stop_proxy"}
+    ]
+
+ 3. S1: StartProxyAction
+    - Creates ProxyManager -> DumpMaster on 127.0.0.1:8080
+    - Daemon thread starts, proxy listening
+    - context["traffic_store"] = TrafficStore (empty)
+
+ 4. Meanwhile, UEMS agent sends HTTPS to 127.0.0.1:8080:
+    GET /agentSlot?actionToCall=AgentOfset&computerName=...
+    |
+    +-> mitmproxy forwards to 172.24.148.221:8383
+    +-> Server replies 200 OK with XML body
+    +-> UEMSAddon.response() captures:
+          CapturedFlow(url="/agentSlot?...", method="GET", status=200, body="...")
+    +-> TrafficStore.add_flow() stores it + notifies waiters
+
+ 5. W1: WaitForRequestAction
+    - Calls traffic_store.wait_for_request("agentSlot", timeout=180)
+    - TrafficStore finds matching flow (already captured)
+    - Returns immediately
+
+ 6. T1: ValidateRequestAction
+    - flow = traffic_store.get_latest_flow("agentSlot")
+    - Checks flow.request_method == "GET"
+    - handle_success() -> prints: T1|PASSED|Request found: GET /agentSlot...
+
+ 7. T2: ValidateResponseAction
+    - flow = traffic_store.get_latest_flow("agentSlot")
+    - Checks flow.response_status == 200
+    - handle_success() -> prints: T2|PASSED|Response validated: status=200
+
+ 8. S2: StopProxyAction
+    - proxy_manager.stop() -> DumpMaster.shutdown()
+
+ 9. TestEngine prints: SUMMARY|Total:5|Passed:5|Failed:0
+    Exit code: 0
+</div>
+
+<!-- ===== 11. DESIGN PATTERNS ===== -->
+<h2>11. Design Patterns Used</h2>
+
+<table>
+    <tr><th>Pattern</th><th>Where</th><th>Why</th></tr>
+    <tr><td><strong>Template Method</strong></td><td><code>BaseAction.run()</code></td><td>Common flow (validate, time, execute, handle errors) with action-specific <code>execute()</code> override</td></tr>
+    <tr><td><strong>Registry / Strategy</strong></td><td><code>ActionRegistry</code></td><td>Maps action name strings to interchangeable handler objects at runtime</td></tr>
+    <tr><td><strong>Observer (Wait/Notify)</strong></td><td><code>TrafficStore</code></td><td>Test thread waits for proxy thread to capture matching traffic, without polling</td></tr>
+    <tr><td><strong>Singleton per Action</strong></td><td><code>ActionRegistry.__init__</code></td><td>Each action handler created once, reused across all commands</td></tr>
+    <tr><td><strong>Shared Context</strong></td><td><code>context</code> dict</td><td>Dependency injection without a DI framework &mdash; actions share proxy_manager, traffic_store, rule_engine</td></tr>
+    <tr><td><strong>Data-Driven Testing</strong></td><td>JSON test files</td><td>Test logic defined in data (JSON), not code. New tests = new JSON, no recompilation.</td></tr>
+    <tr><td><strong>Chain of Responsibility</strong></td><td><code>ResponseRuleEngine</code></td><td>Rules checked in order, first match wins, one-shot rules auto-remove</td></tr>
+</table>
+
+<div class="footer">
+    CommunicationAutomation &mdash; Architecture Document &mdash; February 2026
+</div>
+
+</body>
+</html>

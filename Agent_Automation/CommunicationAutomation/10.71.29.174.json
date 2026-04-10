@@ -1,0 +1,387 @@
+[
+  {
+    "timestamp": "2026-03-25T11:18:08.454697",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:01 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=44EC41EF98331D4685B2D05CBF148A6C; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=66b60623-cfc1-4e91-a695-a1ed0ff1c5fd;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:08.578290",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:01 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=18227E5F36151051CD3CC9E1B470A31A; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=81561cb2-b3d8-4d53-8d33-e675ee5f957e;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:08.656682",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:01 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=7BBCB7BFC104672A1FD9E991D6BEE426; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=bd5d4af9-5dd5-4bd3-9926-9f003bc8ab82;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:08.753134",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:01 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=0CA17600689D631EB76A88FA1F99DB7B; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=6777560f-7ec2-4a22-9580-0e16bcb0f7e0;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:08.843893",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:02 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=DFACA507F75D2E73EE9E0AA619AC5AFA; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=12342541-89a3-4cef-b03d-e68a5b445966;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:08.928381",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:02 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=464EB2E65A7D119D20B9F0499AA40EEC; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=d6a8b9e2-ac38-4d18-9691-c9536901c33e;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:09.015343",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:02 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=299561E0573FA66F0BC7A0BD23A69D91; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=99a5ef4b-7c47-444a-bdc3-a68a6daf6c76;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:09.160381",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:02 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=87B236941E099058FD3E584F81DA0169; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=6fdac9f2-cc2b-4f66-a499-0f0410abdd8c;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:09.224986",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:02 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=ECBB82121A7235EE064A7640685C99A0; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=2cdc0a39-1d0b-402a-b11c-1319552503a5;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:09.310225",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:02 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=004081317A7A2A989408A5E5F4D052DC; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=158adcee-fa63-4251-91ce-90a35097047d;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  },
+  {
+    "timestamp": "2026-03-25T11:18:09.404938",
+    "request": {
+      "url": "https://10.63.26.81:8383/",
+      "method": "GET",
+      "headers": {
+        "cache-control": "no-cache",
+        "pragma": "no-cache",
+        "user-agent": "SecurityManagerAgent"
+      },
+      "body": ""
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "date": "Wed, 25 Mar 2026 05:52:02 GMT",
+        "content-type": "text/html;charset=UTF-8",
+        "content-length": "108",
+        "set-cookie": "UEMJSESSIONID=BE8C5C1847C7BCE644C1BFE86503BE09; Path=/; Secure; HttpOnly; SameSite=None, dccookcsr=9352e65d-ee30-4063-bf92-61a0ac5b7041;path=/;SameSite=None;Secure;priority=high",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "same-origin",
+        "x-content-type-options": "nosniff",
+        "permissions-policy": "accelerometer=(),autoplay=(),camera=(),display-capture=(),encrypted-media=(),fullscreen=(),gamepad=(),geolocation=(),gyroscope=(),magnetometer=(),microphone=(),midi=(),payment=(),picture-in-picture=(),publickey-credentials-get=(),usb=(),screen-wake-lock=(),xr-spatial-tracking=()",
+        "content-security-policy": "default-src 'none';",
+        "x-download-options": "noopen",
+        "x-permitted-cross-domain-policies": "none",
+        "expect-ct": "max-age=7776000",
+        "accept-ranges": "bytes",
+        "last-modified": "Wed, 11 Mar 2026 17:47:59 GMT",
+        "x-dc-header": "yes"
+      },
+      "body": "<!-- $Id$ -->\n<html>\n<head>\n    <META HTTP-EQUIV=Refresh CONTENT=\"0; URL=./configurations\">\n</head>\n</html>\n",
+      "reason": ""
+    }
+  }
+]

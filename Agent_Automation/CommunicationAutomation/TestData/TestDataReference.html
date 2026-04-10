@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Writing Test JSON — Complete Reference</title>
+<style>
+    @page { margin: 20mm; }
+    body { font-family: Segoe UI, Calibri, Arial, sans-serif; color: #222; line-height: 1.6; max-width: 960px; margin: 0 auto; padding: 30px; }
+    h1 { color: #1a5276; border-bottom: 3px solid #1a5276; padding-bottom: 8px; font-size: 24px; }
+    h2 { color: #2c3e50; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; margin-top: 35px; font-size: 19px; }
+    h3 { color: #34495e; font-size: 15px; margin-top: 22px; }
+    h4 { color: #5b6b7a; font-size: 14px; margin-top: 16px; margin-bottom: 6px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+    th { background: #2c3e50; color: #fff; padding: 8px 12px; text-align: left; }
+    td { border: 1px solid #ddd; padding: 7px 12px; vertical-align: top; }
+    tr:nth-child(even) { background: #f8f9fa; }
+    code { background: #ecf0f1; padding: 2px 6px; border-radius: 3px; font-family: Consolas, monospace; font-size: 12px; color: #c0392b; }
+    pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-size: 12px; overflow-x: auto; line-height: 1.5; }
+    pre .cm { color: #7f8c8d; }
+    pre .key { color: #e67e22; }
+    pre .str { color: #2ecc71; }
+    pre .num { color: #3498db; }
+    pre .bool { color: #e74c3c; }
+    .section-box { background: #eaf2f8; border-left: 4px solid #2980b9; padding: 12px 16px; margin: 12px 0; border-radius: 3px; }
+    .warn-box { background: #fef9e7; border-left: 4px solid #f39c12; padding: 12px 16px; margin: 12px 0; border-radius: 3px; }
+    .tip-box { background: #eafaf1; border-left: 4px solid #27ae60; padding: 12px 16px; margin: 12px 0; border-radius: 3px; }
+    .flow-box { background: #fef9e7; border-left: 4px solid #f39c12; padding: 12px 16px; margin: 12px 0; border-radius: 3px; font-family: Consolas, monospace; font-size: 13px; line-height: 1.8; }
+    .badge { display: inline-block; background: #2980b9; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 12px; margin-left: 8px; }
+    .badge-action { display: inline-block; background: #8e44ad; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-family: Consolas, monospace; }
+    .badge-green { background: #27ae60; }
+    .badge-orange { background: #e67e22; }
+    .badge-red { background: #e74c3c; }
+    .tag { display: inline-block; background: #d5f5e3; color: #1e8449; padding: 1px 7px; border-radius: 3px; font-size: 11px; font-weight: bold; }
+    .tag-warn { background: #fdebd0; color: #a04000; }
+    .tag-req { background: #fadbd8; color: #922b21; }
+    p { margin: 8px 0; font-size: 14px; }
+    li { font-size: 14px; margin: 4px 0; }
+    .toc { background: #f4f6f7; border: 1px solid #d5d8dc; border-radius: 6px; padding: 20px 28px; margin: 20px 0; }
+    .toc h3 { margin-top: 0; color: #2c3e50; font-size: 16px; }
+    .toc ul { list-style: none; padding-left: 0; columns: 2; }
+    .toc li { margin: 3px 0; font-size: 13px; }
+    .toc a { text-decoration: none; color: #2980b9; }
+    .toc a:hover { text-decoration: underline; }
+    .toc .sub { padding-left: 18px; font-size: 12px; }
+    .action-header { background: #f4f6f7; border: 1px solid #d5d8dc; border-radius: 5px; padding: 10px 16px; margin-top: 24px; }
+    .action-header h3 { margin: 0; display: inline; }
+    .divider { border: 0; border-top: 1px dashed #bdc3c7; margin: 30px 0; }
+    .footer { margin-top: 40px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 11px; color: #888; text-align: center; }
+    .field-table td:first-child { font-family: Consolas, monospace; font-size: 12px; color: #8e44ad; white-space: nowrap; }
+    .field-table td:nth-child(2) { font-size: 12px; color: #666; white-space: nowrap; }
+    .field-table td:nth-child(3) { font-size: 12px; color: #666; white-space: nowrap; }
+    .mapping-table { font-size: 12px; }
+    .mapping-table td { font-family: Consolas, monospace; padding: 4px 12px; }
+    .check { color: #27ae60; font-weight: bold; }
+    .cross { color: #e74c3c; font-weight: bold; }
+    @media print { .toc { page-break-after: always; } pre { font-size: 10px; } }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h1>Writing Test JSON Files <span class="badge">Complete Reference</span></h1>
+<p>This guide covers everything needed to write test JSON files for <strong>CommunicationAutomation</strong>. Each JSON file defines a complete test scenario as a sequence of commands executed top-to-bottom.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="toc">
+<h3>Table of Contents</h3>
+<ul>
+    <li><a href="#json-structure">1. JSON Structure</a></li>
+    <li><a href="#command-format">2. Command Format</a></li>
+    <li><a href="#common-fields">3. Common Fields</a></li>
+    <li><a href="#variable-substitution">4. Variable Substitution</a></li>
+    <li><a href="#actions">5. Action Reference (19 actions)</a></li>
+    <li class="sub"><a href="#start_proxy">start_proxy</a></li>
+    <li class="sub"><a href="#stop_proxy">stop_proxy</a></li>
+    <li class="sub"><a href="#configure_proxy">configure_proxy</a></li>
+    <li class="sub"><a href="#install_certificate">install_certificate</a></li>
+    <li class="sub"><a href="#load_client_cert">load_client_cert</a></li>
+    <li class="sub"><a href="#manage_service">manage_service</a></li>
+    <li class="sub"><a href="#run_command">run_command</a></li>
+    <li class="sub"><a href="#patch_registry">patch_registry</a></li>
+    <li class="sub"><a href="#load_traffic">load_traffic</a></li>
+    <li class="sub"><a href="#wait_for_request">wait_for_request</a></li>
+    <li class="sub"><a href="#wait_for_interrupt">wait_for_interrupt</a></li>
+    <li class="sub"><a href="#validate_request">validate_request</a></li>
+    <li class="sub"><a href="#validate_response">validate_response</a></li>
+    <li class="sub"><a href="#modify_response">modify_response</a></li>
+    <li class="sub"><a href="#block_request">block_request</a></li>
+    <li class="sub"><a href="#assert_request_count">assert_request_count</a></li>
+    <li class="sub"><a href="#assert_request_order">assert_request_order</a></li>
+    <li class="sub"><a href="#capture_traffic">capture_traffic</a></li>
+    <li class="sub"><a href="#clear_captures">clear_captures</a></li>
+    <li><a href="#validation-types">6. Validation Types</a></li>
+    <li><a href="#flow-patterns">7. Test Flow Patterns &amp; Templates</a></li>
+    <li><a href="#test-files">8. Complete Examples &mdash; Existing Test Files</a></li>
+    <li><a href="#naming">9. Naming Conventions</a></li>
+    <li><a href="#machine-values">10. Machine-Specific Values</a></li>
+    <li><a href="#troubleshooting">11. Troubleshooting</a></li>
+</ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="json-structure">1. JSON Structure</h2>
+<p>A test file is either a <strong>flat array</strong> of commands (recommended) or a <strong>wrapped object</strong>:</p>
+
+<pre><span class="cm">// Flat array (recommended)</span>
+[
+    {<span class="key">"id"</span>: <span class="str">"STEP_001"</span>, <span class="key">"action"</span>: <span class="str">"start_proxy"</span>, ...},
+    {<span class="key">"id"</span>: <span class="str">"STEP_002"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>, ...}
+]
+
+<span class="cm">// Wrapped object</span>
+{
+    <span class="key">"commands"</span>: [
+        {<span class="key">"id"</span>: <span class="str">"STEP_001"</span>, <span class="key">"action"</span>: <span class="str">"start_proxy"</span>, ...},
+        {<span class="key">"id"</span>: <span class="str">"STEP_002"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>, ...}
+    ]
+}</pre>
+
+<div class="warn-box">
+    <strong>Execution order:</strong> Commands execute <strong>sequentially, top-to-bottom</strong>. If any command fails and <code>continueOnFailure</code> is not <code>true</code>, execution <strong>stops immediately</strong> &mdash; remaining commands (including cleanup) will not run.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="command-format">2. Command Format</h2>
+<p>Every command is a JSON object. At minimum it needs <code>action</code>. All fields use <strong>camelCase</strong> in JSON.</p>
+
+<pre>{
+    <span class="key">"id"</span>: <span class="str">"TC_001"</span>,
+    <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+    <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>,
+    <span class="key">"method"</span>: <span class="str">"GET"</span>,
+    <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>,
+    <span class="key">"description"</span>: <span class="str">"Verify agentSlot is a GET request"</span>
+}</pre>
+
+<h3>Field Name Mapping (JSON &rarr; Python)</h3>
+<p>JSON uses <strong>camelCase</strong>. The engine auto-maps to Python <strong>snake_case</strong>. Both forms accepted; <strong>use camelCase</strong> in JSON.</p>
+
+<table class="mapping-table">
+<tr><th>JSON (camelCase)</th><th>Python (snake_case)</th><th></th><th>JSON (camelCase)</th><th>Python (snake_case)</th></tr>
+<tr><td>continueOnFailure</td><td>continue_on_failure</td><td></td><td>urlPattern</td><td>url_pattern</td></tr>
+<tr><td>listenHost</td><td>listen_host</td><td></td><td>headerName</td><td>header_name</td></tr>
+<tr><td>listenPort</td><td>listen_port</td><td></td><td>bodyPattern</td><td>body_pattern</td></tr>
+<tr><td>upstreamProxy</td><td>upstream_proxy</td><td></td><td>expectedValue</td><td>expected_value</td></tr>
+<tr><td>sslInsecure</td><td>ssl_insecure</td><td></td><td>expectedStatus</td><td>expected_status</td></tr>
+<tr><td>certAction</td><td>cert_action</td><td></td><td>validationType</td><td>validation_type</td></tr>
+<tr><td>certPath</td><td>cert_path</td><td></td><td>caseSensitive</td><td>case_sensitive</td></tr>
+<tr><td>clientCertPath</td><td>client_cert_path</td><td></td><td>minCount</td><td>min_count</td></tr>
+<tr><td>clientKeyPath</td><td>client_key_path</td><td></td><td>maxCount</td><td>max_count</td></tr>
+<tr><td>serviceName</td><td>service_name</td><td></td><td>expectedCount</td><td>expected_count</td></tr>
+<tr><td>serviceAction</td><td>service_action</td><td></td><td>expectedOrder</td><td>expected_order</td></tr>
+<tr><td>commandLine</td><td>command_line</td><td></td><td>injectStatus</td><td>inject_status</td></tr>
+<tr><td>workingDir</td><td>working_dir</td><td></td><td>injectBody</td><td>inject_body</td></tr>
+<tr><td>registryKey</td><td>registry_key</td><td></td><td>injectHeaders</td><td>inject_headers</td></tr>
+<tr><td>registryAction</td><td>registry_action</td><td></td><td>blockAction</td><td>block_action</td></tr>
+<tr><td>oldValues</td><td>old_values</td><td></td><td>delayMs</td><td>delay_ms</td></tr>
+<tr><td>newValues</td><td>new_values</td><td></td><td>captureFile</td><td>capture_file</td></tr>
+<tr><td>proxyAction</td><td>proxy_action</td><td></td><td>captureFormat</td><td>capture_format</td></tr>
+<tr><td>proxyHost</td><td>proxy_host</td><td></td><td>bypassList</td><td>bypass_list</td></tr>
+<tr><td>proxyPort</td><td>proxy_port</td><td></td><td>autoLoadCert</td><td>auto_load_cert</td></tr>
+<tr><td></td><td></td><td></td><td>liveCaptureFile</td><td>live_capture_file</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="common-fields">3. Common Fields</h2>
+<p>These fields work on <strong>every</strong> command:</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>id</td><td>string</td><td>""</td><td>Unique step identifier. Used in output, logging, and variable substitution. <strong>Always set this.</strong></td></tr>
+<tr><td>action</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> The action to execute (case-insensitive).</td></tr>
+<tr><td>description</td><td>string</td><td>""</td><td>Human-readable description. Appears in logs and output remarks.</td></tr>
+<tr><td>continueOnFailure</td><td>boolean</td><td>false</td><td>If <code>true</code>, test continues even if this step fails. <strong>Critical for cleanup steps.</strong></td></tr>
+<tr><td>timeout</td><td>integer</td><td>varies</td><td>Timeout in seconds. Meaning depends on the action.</td></tr>
+</table>
+
+<h3>When to use <code>continueOnFailure: true</code></h3>
+<table>
+<tr><th>Scenario</th><th>Use?</th><th>Why</th></tr>
+<tr><td>Setup steps (hosts file, firewall, port proxy)</td><td><span class="check">&#10004; Yes</span></td><td>These are secondary; failure shouldn't block the whole test</td></tr>
+<tr><td>Cleanup steps</td><td><span class="check">&#10004; Always</span></td><td>Cleanup must run regardless; don't leave system dirty</td></tr>
+<tr><td>Test case assertions that should not block others</td><td><span class="check">&#10004; Yes</span></td><td>Run all TCs even if one fails</td></tr>
+<tr><td>Critical setup (start_proxy, patch_registry, install_cert)</td><td><span class="cross">&#10008; No</span></td><td>If these fail, nothing downstream will work</td></tr>
+<tr><td>Wait steps required for test cases</td><td><span class="cross">&#10008; No</span></td><td>If the request never arrives, validations will fail anyway</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="variable-substitution">4. Variable Substitution</h2>
+<p>After each command executes, its result is stored. Subsequent commands can reference it using <code>{{stepId.property}}</code> in any string field.</p>
+
+<h3>Available Properties</h3>
+<table class="field-table">
+<tr><th>Variable</th><th>Type</th><th>Description</th></tr>
+<tr><td>{{STEP_ID.success}}</td><td>"True" / "False"</td><td>Whether the step succeeded</td></tr>
+<tr><td>{{STEP_ID.message}}</td><td>string</td><td>Result message</td></tr>
+<tr><td>{{STEP_ID.error}}</td><td>string</td><td>Error message (only if failed)</td></tr>
+<tr><td>{{STEP_ID.data}}</td><td>string</td><td>Action-specific data (dict-as-string, file path, count, etc.)</td></tr>
+<tr><td>{{STEP_ID.duration}}</td><td>string</td><td>Execution duration</td></tr>
+<tr><td>{{STEP_ID.commandid}}</td><td>string</td><td>The command ID itself</td></tr>
+<tr><td>{{STEP_ID.action}}</td><td>string</td><td>The action name</td></tr>
+</table>
+
+<h3>Example: Using step results in later steps</h3>
+<pre>[
+    {<span class="key">"id"</span>: <span class="str">"FIND_SVC"</span>, <span class="key">"action"</span>: <span class="str">"manage_service"</span>, <span class="key">"serviceName"</span>: <span class="str">"UEMS"</span>, <span class="key">"serviceAction"</span>: <span class="str">"find"</span>},
+    {<span class="key">"id"</span>: <span class="str">"STOP_SVC"</span>, <span class="key">"action"</span>: <span class="str">"manage_service"</span>, <span class="key">"serviceName"</span>: <span class="str">"{{FIND_SVC.data}}"</span>, <span class="key">"serviceAction"</span>: <span class="str">"stop"</span>}
+]</pre>
+
+<div class="section-box">
+    <strong>Rules:</strong>
+    <ul style="margin:6px 0 0 0;">
+        <li>Substitution happens <strong>before</strong> the command is parsed &mdash; it works in any string field</li>
+        <li>Unresolved variables are left as-is: <code>{{UNKNOWN.data}}</code></li>
+        <li>Lookup is <strong>case-insensitive</strong> as a fallback</li>
+        <li>Non-string fields (integers, booleans, arrays) are <strong>not</strong> substituted</li>
+    </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="actions">5. Action Reference</h2>
+<p>CommunicationAutomation supports <strong>19 actions</strong>. Each section below shows the action's fields, defaults, and usage examples.</p>
+
+<!-- ─────────────────── start_proxy ─────────────────── -->
+<div class="action-header" id="start_proxy">
+    <h3>start_proxy</h3> <span class="badge-action">SETUP</span>
+</div>
+<p>Spawns a <strong>detached background process</strong> running <code>--serve</code> mode. The background process writes captured traffic to a live JSON file in real-time. Use <code>stop_proxy</code> to terminate it. <strong>Must be called before any traffic-related actions.</strong></p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>listenHost</td><td>string</td><td>"127.0.0.1"</td><td>IP address to listen on</td></tr>
+<tr><td>listenPort</td><td>integer</td><td>8080</td><td>Port to listen on. <span class="tag-req">Required &gt; 0</span></td></tr>
+<tr><td>mode</td><td>string</td><td>""</td><td>Proxy mode. Use <code>"reverse:https://IP:PORT"</code> for reverse proxy</td></tr>
+<tr><td>sslInsecure</td><td>boolean</td><td>false</td><td>Skip upstream SSL certificate verification</td></tr>
+<tr><td>upstreamProxy</td><td>string</td><td>""</td><td>Chain through another proxy (e.g. <code>"http://proxy:3128"</code>)</td></tr>
+<tr><td>autoLoadCert</td><td>boolean</td><td>false</td><td>Auto-detect CSR servlet responses and load agent client certs from vault for mTLS</td></tr>
+<tr><td>liveCaptureFile</td><td>string</td><td>"Reports/live-capture.json"</td><td>Path for real-time traffic capture file (used by <code>wait_for_request</code> file-polling)</td></tr>
+</table>
+
+<p><strong>Stores in context:</strong> <code>background_proxy_pid</code><br>
+<strong>Result data:</strong> <code>{"pid": &lt;int&gt;, "live_capture_file": "&lt;path&gt;"}</code><br>
+<strong>PID file:</strong> <code>Reports/proxy.pid</code><br>
+<strong>Logs:</strong> <code>Reports/proxy.log</code> (structured), <code>Reports/proxy_stdout.log</code> (stdout/stderr)</p>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"SETUP_001"</span>, <span class="key">"action"</span>: <span class="str">"start_proxy"</span>,
+ <span class="key">"listenHost"</span>: <span class="str">"127.0.0.1"</span>, <span class="key">"listenPort"</span>: <span class="num">8080</span>,
+ <span class="key">"mode"</span>: <span class="str">"reverse:https://10.69.73.19:8383"</span>,
+ <span class="key">"sslInsecure"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"Start reverse proxy forwarding to real server"</span>}
+
+<span class="cm">// With CSR auto-cert-loading and live capture</span>
+{<span class="key">"id"</span>: <span class="str">"SETUP_002"</span>, <span class="key">"action"</span>: <span class="str">"start_proxy"</span>,
+ <span class="key">"listenHost"</span>: <span class="str">"0.0.0.0"</span>, <span class="key">"listenPort"</span>: <span class="num">8080</span>,
+ <span class="key">"mode"</span>: <span class="str">"reverse:https://172.24.148.221:8383"</span>,
+ <span class="key">"sslInsecure"</span>: <span class="bool">true</span>,
+ <span class="key">"autoLoadCert"</span>: <span class="bool">true</span>,
+ <span class="key">"liveCaptureFile"</span>: <span class="str">"Reports/csr-capture-traffic.json"</span>,
+ <span class="key">"description"</span>: <span class="str">"Start reverse proxy with CSR auto-cert-loading"</span>}</pre>
+
+<div class="section-box">
+    <strong>Modes:</strong>
+    <ul style="margin:4px 0 0 0;">
+        <li><strong>Reverse proxy</strong> (most common): <code>"mode": "reverse:https://SERVER_IP:PORT"</code> &mdash; all traffic forwarded to server</li>
+        <li><strong>Regular proxy</strong> (no mode): acts as a forward HTTP/S proxy &mdash; clients must use it</li>
+        <li><strong>Upstream proxy</strong>: combine with <code>upstreamProxy</code> to chain through a corporate proxy</li>
+    </ul>
+    <p style="margin-top:6px;"><em>If <code>start_proxy</code> is called while a background proxy is already running (PID file exists and process alive), it will <strong>fail</strong> instead of starting a duplicate.</em></p>
+</div>
+
+<!-- ─────────────────── stop_proxy ─────────────────── -->
+<div class="action-header" id="stop_proxy">
+    <h3>stop_proxy</h3> <span class="badge-action">CLEANUP</span>
+</div>
+<p>Stops the background proxy process. Uses a multi-attempt kill strategy:</p>
+<ol>
+    <li><code>taskkill /F /T /PID</code> &mdash; primary, kills entire process tree</li>
+    <li><code>CTRL_BREAK_EVENT</code> signal &mdash; fallback</li>
+    <li><code>SIGTERM</code> &mdash; calls <code>TerminateProcess()</code> on Windows</li>
+    <li>Final <code>taskkill</code> retry if still alive</li>
+    <li><strong>Verifies</strong> the process is dead &mdash; reports failure if it survives</li>
+</ol>
+<p>Reads PID from <code>Reports/proxy.pid</code> or <code>context["background_proxy_pid"]</code>. Cleans up PID file after stopping.</p>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"CLEANUP_LAST"</span>, <span class="key">"action"</span>: <span class="str">"stop_proxy"</span>, <span class="key">"description"</span>: <span class="str">"Stop proxy"</span>}</pre>
+
+<p>No additional fields. Succeeds if proxy is already stopped.</p>
+
+<!-- ─────────────────── configure_proxy ─────────────────── -->
+<div class="action-header" id="configure_proxy">
+    <h3>configure_proxy</h3> <span class="badge-action">SETUP</span>
+</div>
+<p>Enables or disables the <strong>Windows system proxy</strong> (via <code>netsh winhttp</code>). Separate from the MITM proxy.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>proxyAction</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> <code>"enable"</code> or <code>"disable"</code></td></tr>
+<tr><td>proxyHost</td><td>string</td><td>"127.0.0.1"</td><td>Proxy host for system settings</td></tr>
+<tr><td>proxyPort</td><td>integer</td><td>8080</td><td>Proxy port for system settings</td></tr>
+<tr><td>bypassList</td><td>string</td><td>""</td><td>Semicolon-separated bypass list</td></tr>
+</table>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"SYS_001"</span>, <span class="key">"action"</span>: <span class="str">"configure_proxy"</span>,
+ <span class="key">"proxyAction"</span>: <span class="str">"enable"</span>, <span class="key">"proxyHost"</span>: <span class="str">"127.0.0.1"</span>, <span class="key">"proxyPort"</span>: <span class="num">8080</span>,
+ <span class="key">"bypassList"</span>: <span class="str">"localhost;*.local"</span>,
+ <span class="key">"description"</span>: <span class="str">"Enable Windows system proxy"</span>}</pre>
+
+<!-- ─────────────────── install_certificate ─────────────────── -->
+<div class="action-header" id="install_certificate">
+    <h3>install_certificate</h3> <span class="badge-action">SETUP</span>
+</div>
+<p>Installs or removes the mitmproxy CA certificate from the Windows trust store. Required for HTTPS interception.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>certAction</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> <code>"install"</code> or <code>"remove"</code></td></tr>
+<tr><td>certPath</td><td>string</td><td>""</td><td>Path to certificate file (uses mitmproxy default if empty)</td></tr>
+</table>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"CERT_001"</span>, <span class="key">"action"</span>: <span class="str">"install_certificate"</span>, <span class="key">"certAction"</span>: <span class="str">"install"</span>,
+ <span class="key">"description"</span>: <span class="str">"Install mitmproxy CA cert"</span>}
+
+{<span class="key">"id"</span>: <span class="str">"CERT_002"</span>, <span class="key">"action"</span>: <span class="str">"install_certificate"</span>, <span class="key">"certAction"</span>: <span class="str">"remove"</span>,
+ <span class="key">"description"</span>: <span class="str">"Remove mitmproxy CA cert"</span>}</pre>
+
+<!-- ─────────────────── load_client_cert ─────────────────── -->
+<div class="action-header" id="load_client_cert">
+    <h3>load_client_cert</h3> <span class="badge-action">SETUP</span>
+</div>
+<p>Loads the UEMS agent's client certificate and private key from the vault for mTLS forwarding. Call <strong>before</strong> <code>start_proxy</code>.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>clientCertPath</td><td>string</td><td>Agent vault default</td><td>Path to client certificate</td></tr>
+<tr><td>clientKeyPath</td><td>string</td><td>Agent vault default</td><td>Path to private key</td></tr>
+</table>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"CERT_003"</span>, <span class="key">"action"</span>: <span class="str">"load_client_cert"</span>,
+ <span class="key">"description"</span>: <span class="str">"Load agent mTLS cert from vault"</span>}</pre>
+
+<div class="warn-box">
+    <strong>Note:</strong> Agent vault files are in a proprietary encrypted format. The action succeeds with a warning if format conversion fails, so the proxy can still start without mTLS forwarding. Auto-detects PEM, DER, hex-encoded, and base64 formats.
+</div>
+
+<!-- ─────────────────── manage_service ─────────────────── -->
+<div class="action-header" id="manage_service">
+    <h3>manage_service</h3> <span class="badge-action">SETUP</span> <span class="badge-action">CLEANUP</span>
+</div>
+<p>Start, stop, restart, query status, or find a Windows service.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>serviceName</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Service name or keyword (e.g. <code>"UEMS"</code>, <code>"ManageEngine"</code>)</td></tr>
+<tr><td>serviceAction</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> <code>"start"</code>, <code>"stop"</code>, <code>"restart"</code>, <code>"status"</code>, or <code>"find"</code></td></tr>
+</table>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"SVC_001"</span>, <span class="key">"action"</span>: <span class="str">"manage_service"</span>,
+ <span class="key">"serviceName"</span>: <span class="str">"ManageEngine UEMS - Agent"</span>,
+ <span class="key">"serviceAction"</span>: <span class="str">"restart"</span>,
+ <span class="key">"description"</span>: <span class="str">"Restart UEMS agent service"</span>}</pre>
+
+<div class="tip-box">
+    <strong>Auto-discovery:</strong> If the exact service name isn't found, it searches all services for keyword matches (UEMS, ManageEngine, DesktopCentral, Zoho), preferring services with "agent" in the name. Use <code>"find"</code> to discover the name first, then reference it via variables.
+</div>
+
+<pre><span class="cm">// Find service, then use the resolved name via variable substitution</span>
+{<span class="key">"id"</span>: <span class="str">"FIND_SVC"</span>, <span class="key">"action"</span>: <span class="str">"manage_service"</span>, <span class="key">"serviceName"</span>: <span class="str">"UEMS"</span>, <span class="key">"serviceAction"</span>: <span class="str">"find"</span>},
+{<span class="key">"id"</span>: <span class="str">"STOP_SVC"</span>, <span class="key">"action"</span>: <span class="str">"manage_service"</span>, <span class="key">"serviceName"</span>: <span class="str">"{{FIND_SVC.data}}"</span>, <span class="key">"serviceAction"</span>: <span class="str">"stop"</span>}</pre>
+
+<!-- ─────────────────── run_command ─────────────────── -->
+<div class="action-header" id="run_command">
+    <h3>run_command</h3> <span class="badge-action">SETUP</span> <span class="badge-action">CLEANUP</span>
+</div>
+<p>Run any shell command. Used for OS-level setup/cleanup (hosts file, firewall, port proxy, cfgupdate, etc.).</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>commandLine</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Command to execute (runs via <code>cmd /c</code> shell)</td></tr>
+<tr><td>timeout</td><td>integer</td><td>60</td><td>Max seconds to wait for command to finish</td></tr>
+<tr><td>workingDir</td><td>string</td><td>""</td><td>Working directory (optional)</td></tr>
+</table>
+
+<p><strong>Result data:</strong> <code>{"exit_code": 0, "output": "..."}</code></p>
+
+<pre><span class="cm">// Trigger agent config refresh</span>
+{<span class="key">"id"</span>: <span class="str">"TRIGGER"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+ <span class="key">"commandLine"</span>: <span class="str">"\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\""</span>,
+ <span class="key">"timeout"</span>: <span class="num">30</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"Trigger cfgupdate"</span>}
+
+<span class="cm">// Add hosts file entry</span>
+{<span class="key">"id"</span>: <span class="str">"HOSTS"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+ <span class="key">"commandLine"</span>: <span class="str">"powershell -Command \"Add-Content ... '`n127.0.0.1 server-hostname'\""</span>,
+ <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>}
+
+<span class="cm">// Add firewall block rule</span>
+{<span class="key">"id"</span>: <span class="str">"FW"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+ <span class="key">"commandLine"</span>: <span class="str">"netsh advfirewall firewall add rule name=\"BlockUEMS\" dir=out action=block protocol=TCP remoteip=10.69.73.19 remoteport=8383"</span>,
+ <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>}
+
+<span class="cm">// Add port proxy</span>
+{<span class="key">"id"</span>: <span class="str">"PORTPROXY"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+ <span class="key">"commandLine"</span>: <span class="str">"netsh interface portproxy add v4tov4 listenport=8383 listenaddress=127.0.0.1 connectport=8080 connectaddress=127.0.0.1"</span>,
+ <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>}
+
+<span class="cm">// Flush DNS</span>
+{<span class="key">"id"</span>: <span class="str">"DNS"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>, <span class="key">"commandLine"</span>: <span class="str">"ipconfig /flushdns"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>}</pre>
+
+<!-- ─────────────────── patch_registry ─────────────────── -->
+<div class="action-header" id="patch_registry">
+    <h3>patch_registry</h3> <span class="badge-action">SETUP</span> <span class="badge-action">CLEANUP</span>
+</div>
+<p>Bulk find-and-replace on all string values under a Windows registry key. The agent stores its server info in the registry; this patches it to redirect to the proxy.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>registryKey</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Full registry key path</td></tr>
+<tr><td>registryAction</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> <code>"patch"</code> or <code>"restore"</code></td></tr>
+<tr><td>oldValues</td><td>array</td><td>[]</td><td>Strings to find (patch mode only)</td></tr>
+<tr><td>newValues</td><td>array</td><td>[]</td><td>Replacement strings (same length as oldValues)</td></tr>
+</table>
+
+<pre><span class="cm">// Patch: redirect agent from real server to proxy</span>
+{<span class="key">"id"</span>: <span class="str">"REG_PATCH"</span>, <span class="key">"action"</span>: <span class="str">"patch_registry"</span>,
+ <span class="key">"registryKey"</span>: <span class="str">"HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo"</span>,
+ <span class="key">"registryAction"</span>: <span class="str">"patch"</span>,
+ <span class="key">"oldValues"</span>: [<span class="str">"server-hostname"</span>, <span class="str">"10.69.73.19"</span>, <span class="str">"8383"</span>],
+ <span class="key">"newValues"</span>: [<span class="str">"127.0.0.1"</span>, <span class="str">"127.0.0.1"</span>, <span class="str">"8080"</span>],
+ <span class="key">"description"</span>: <span class="str">"Redirect agent to proxy"</span>}
+
+<span class="cm">// Restore: revert to original values (auto-saved during patch)</span>
+{<span class="key">"id"</span>: <span class="str">"REG_RESTORE"</span>, <span class="key">"action"</span>: <span class="str">"patch_registry"</span>,
+ <span class="key">"registryKey"</span>: <span class="str">"HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo"</span>,
+ <span class="key">"registryAction"</span>: <span class="str">"restore"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"Restore original registry values"</span>}</pre>
+
+<div class="section-box">
+    <strong>Important:</strong>
+    <ul style="margin:4px 0 0 0;">
+        <li><code>oldValues</code> and <code>newValues</code> must be the <strong>same length</strong> (each pair is a find&rarr;replace)</li>
+        <li>Replacement is <strong>case-insensitive</strong></li>
+        <li>Only <code>REG_SZ</code> and <code>REG_EXPAND_SZ</code> values are patched</li>
+        <li>Uses the 32-bit registry view (<code>KEY_WOW64_32KEY</code>)</li>
+        <li>Supports <code>HKLM</code>, <code>HKEY_LOCAL_MACHINE</code>, <code>HKCU</code>, <code>HKEY_CURRENT_USER</code> prefixes</li>
+    </ul>
+</div>
+
+<!-- ─────────────────── load_traffic ─────────────────── -->
+<div class="action-header" id="load_traffic">
+    <h3>load_traffic</h3> <span class="badge-action">SETUP</span>
+</div>
+<p>Load previously captured traffic from a JSON file into the traffic store. This allows validation actions (<code>validate_request</code>, <code>validate_response</code>, <code>assert_*</code>) to run in a <strong>separate execution</strong> from the capture session.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>captureFile</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Path to the JSON capture file to load</td></tr>
+</table>
+
+<p><strong>Result data:</strong> <code>{"file": "&lt;path&gt;", "loaded": &lt;int&gt;, "total": &lt;int&gt;}</code></p>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"LOAD_001"</span>, <span class="key">"action"</span>: <span class="str">"load_traffic"</span>,
+ <span class="key">"captureFile"</span>: <span class="str">"Reports/csr-capture-traffic.json"</span>,
+ <span class="key">"description"</span>: <span class="str">"Load captured CSR traffic for validation"</span>}</pre>
+
+<div class="section-box">
+    <strong>Use cases:</strong>
+    <ul style="margin:4px 0 0 0;">
+        <li>Validate traffic from a live capture file written by a background proxy</li>
+        <li>Re-run validation against previously captured traffic</li>
+        <li>Run capture and validation as separate test executions</li>
+    </ul>
+</div>
+
+<!-- ─────────────────── wait_for_request ─────────────────── -->
+<div class="action-header" id="wait_for_request">
+    <h3>wait_for_request</h3> <span class="badge-action">WAIT</span>
+</div>
+<p>Blocks execution until a matching HTTP request arrives in the traffic store. Used after triggering agent activity.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>urlPattern</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Regex pattern to match the request URL</td></tr>
+<tr><td>method</td><td>string</td><td>""</td><td>Optional HTTP method filter (GET, POST, etc.)</td></tr>
+<tr><td>timeout</td><td>integer</td><td>60</td><td>Max seconds to wait</td></tr>
+<tr><td>captureFile</td><td>string</td><td>""</td><td>Live capture JSON file to poll (enables file-polling mode)</td></tr>
+</table>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"WAIT_001"</span>, <span class="key">"action"</span>: <span class="str">"wait_for_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"timeout"</span>: <span class="num">180</span>,
+ <span class="key">"description"</span>: <span class="str">"Wait for agentSlot (up to 3 min)"</span>}
+
+<span class="cm">// File-polling mode: poll a live capture JSON written by background proxy</span>
+{<span class="key">"id"</span>: <span class="str">"WAIT_002"</span>, <span class="key">"action"</span>: <span class="str">"wait_for_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"ClientCSRSigningServlet"</span>, <span class="key">"timeout"</span>: <span class="num">300</span>,
+ <span class="key">"captureFile"</span>: <span class="str">"Reports/csr-capture-traffic.json"</span>,
+ <span class="key">"description"</span>: <span class="str">"Wait for CSR request in live capture file"</span>}</pre>
+
+<div class="section-box">
+    <strong>Two modes:</strong>
+    <ul style="margin:4px 0 0 0;">
+        <li><strong>In-process</strong> &mdash; Polls the in-memory <code>TrafficStore</code> (when proxy runs in same process)</li>
+        <li><strong>File-polling</strong> &mdash; If <code>captureFile</code> is set <em>or</em> no in-memory store exists, periodically re-reads the live capture JSON. Once matched, <strong>all</strong> flows are loaded into <code>context["traffic_store"]</code> for subsequent validations.</li>
+    </ul>
+</div>
+
+<div class="tip-box">
+    <strong>Tip:</strong> Set <code>timeout</code> generously. After cfgupdate, traffic usually appears within 1&ndash;3 minutes, but can take longer.
+</div>
+
+<!-- ─────────────────── wait_for_interrupt ─────────────────── -->
+<div class="action-header" id="wait_for_interrupt">
+    <h3>wait_for_interrupt</h3> <span class="badge-action">RECORDING</span>
+</div>
+<p>Blocks indefinitely until the user presses <strong>Ctrl+C</strong>. Used for interactive recording sessions.</p>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"RECORD"</span>, <span class="key">"action"</span>: <span class="str">"wait_for_interrupt"</span>,
+ <span class="key">"description"</span>: <span class="str">"Recording traffic... Press Ctrl+C to stop"</span>}</pre>
+
+<p>No additional fields. Prints progress every 10 seconds. Always succeeds on interrupt so cleanup steps run.</p>
+
+<!-- ─────────────────── validate_request ─────────────────── -->
+<hr class="divider">
+<div class="action-header" id="validate_request">
+    <h3>validate_request</h3> <span class="badge-action">TEST</span>
+</div>
+<p>Assert properties of a <strong>captured HTTP request</strong>. The most-used test action.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>urlPattern</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Regex to find the matching request</td></tr>
+<tr><td>method</td><td>string</td><td>""</td><td>Optional method filter (also acts as assertion)</td></tr>
+<tr><td>headerName</td><td>string</td><td>""</td><td>Request header to validate</td></tr>
+<tr><td>expectedValue</td><td>string</td><td>""</td><td>Expected value for header or URL</td></tr>
+<tr><td>bodyPattern</td><td>string</td><td>""</td><td>Pattern to match in request body</td></tr>
+<tr><td>validationType</td><td>string</td><td>"contains"</td><td>How to compare (see <a href="#validation-types">Validation Types</a>)</td></tr>
+<tr><td>caseSensitive</td><td>boolean</td><td>false</td><td>Case-sensitive comparison</td></tr>
+</table>
+
+<h4>What gets validated depends on which fields you set:</h4>
+<table>
+<tr><th>Fields Set</th><th>What's Checked</th></tr>
+<tr><td><code>urlPattern</code> + <code>method</code> only</td><td>Request exists with that method</td></tr>
+<tr><td><code>headerName</code> + <code>expectedValue</code></td><td>The specified request header matches the expected value</td></tr>
+<tr><td><code>bodyPattern</code></td><td>Request body matches the pattern</td></tr>
+<tr><td><code>expectedValue</code> (no <code>headerName</code>)</td><td>The request URL matches the expected value</td></tr>
+<tr><td>None of the above</td><td>Request simply exists</td></tr>
+</table>
+
+<h4>Examples</h4>
+<pre><span class="cm">// Check method</span>
+{<span class="key">"id"</span>: <span class="str">"TC_001"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"method"</span>: <span class="str">"GET"</span>,
+ <span class="key">"description"</span>: <span class="str">"agentSlot: method is GET"</span>}
+
+<span class="cm">// Check header value (startswith)</span>
+{<span class="key">"id"</span>: <span class="str">"TC_002"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>,
+ <span class="key">"headerName"</span>: <span class="str">"Authorization"</span>, <span class="key">"expectedValue"</span>: <span class="str">"Basic "</span>,
+ <span class="key">"validationType"</span>: <span class="str">"startswith"</span>,
+ <span class="key">"description"</span>: <span class="str">"agentSlot: has Basic auth"</span>}
+
+<span class="cm">// Check header exists (non-empty)</span>
+{<span class="key">"id"</span>: <span class="str">"TC_003"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"meta-data\\.xml"</span>,
+ <span class="key">"headerName"</span>: <span class="str">"If-Modified-Since"</span>, <span class="key">"expectedValue"</span>: <span class="str">""</span>,
+ <span class="key">"validationType"</span>: <span class="str">"notempty"</span>,
+ <span class="key">"description"</span>: <span class="str">"meta-data.xml: If-Modified-Since header present"</span>}
+
+<span class="cm">// Check header exact value (case-sensitive)</span>
+{<span class="key">"id"</span>: <span class="str">"TC_004"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>,
+ <span class="key">"headerName"</span>: <span class="str">"User-Agent"</span>, <span class="key">"expectedValue"</span>: <span class="str">"DesktopCentral Agent"</span>,
+ <span class="key">"validationType"</span>: <span class="str">"exact"</span>, <span class="key">"caseSensitive"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"agentSlot: User-Agent is exact"</span>}
+
+<span class="cm">// Check URL contains a parameter</span>
+{<span class="key">"id"</span>: <span class="str">"TC_005"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>,
+ <span class="key">"expectedValue"</span>: <span class="str">"actionToCall=AgentOfset"</span>,
+ <span class="key">"validationType"</span>: <span class="str">"contains"</span>,
+ <span class="key">"description"</span>: <span class="str">"agentSlot: URL has actionToCall param"</span>}
+
+<span class="cm">// Check URL with regex</span>
+{<span class="key">"id"</span>: <span class="str">"TC_006"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>,
+ <span class="key">"expectedValue"</span>: <span class="str">"resourceId=\\d+"</span>,
+ <span class="key">"validationType"</span>: <span class="str">"regex"</span>,
+ <span class="key">"description"</span>: <span class="str">"agentSlot: resourceId is numeric"</span>}
+
+<span class="cm">// Check request body</span>
+{<span class="key">"id"</span>: <span class="str">"TC_007"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"endpointdlp"</span>,
+ <span class="key">"bodyPattern"</span>: <span class="str">"ResourceId"</span>,
+ <span class="key">"validationType"</span>: <span class="str">"contains"</span>,
+ <span class="key">"description"</span>: <span class="str">"endpointdlp: body contains ResourceId"</span>}
+
+<span class="cm">// Check body with regex</span>
+{<span class="key">"id"</span>: <span class="str">"TC_008"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"endpointdlp"</span>,
+ <span class="key">"bodyPattern"</span>: <span class="str">"ImmediatePostCount.*\\d+"</span>,
+ <span class="key">"validationType"</span>: <span class="str">"regex"</span>,
+ <span class="key">"description"</span>: <span class="str">"endpointdlp: ImmediatePostCount has numeric value"</span>}</pre>
+
+<!-- ─────────────────── validate_response ─────────────────── -->
+<div class="action-header" id="validate_response">
+    <h3>validate_response</h3> <span class="badge-action">TEST</span>
+</div>
+<p>Assert properties of a <strong>captured HTTP response</strong>.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>urlPattern</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Regex to find the matching request/response</td></tr>
+<tr><td>method</td><td>string</td><td>""</td><td>Optional method filter</td></tr>
+<tr><td>expectedStatus</td><td>integer</td><td>0</td><td>Expected HTTP status code (200, 404, etc.)</td></tr>
+<tr><td>headerName</td><td>string</td><td>""</td><td>Response header to validate</td></tr>
+<tr><td>expectedValue</td><td>string</td><td>""</td><td>Expected value for header or body</td></tr>
+<tr><td>bodyPattern</td><td>string</td><td>""</td><td>Pattern to match in response body</td></tr>
+<tr><td>validationType</td><td>string</td><td>"contains"</td><td>How to compare</td></tr>
+<tr><td>caseSensitive</td><td>boolean</td><td>false</td><td>Case-sensitive comparison</td></tr>
+</table>
+
+<h4>Validation priority:</h4>
+<ol>
+    <li><code>expectedStatus</code> is always checked first (if &gt; 0) &mdash; <strong>but does not prevent further checks</strong></li>
+    <li><code>headerName</code> + <code>expectedValue</code> &rarr; validate response header &rarr; return</li>
+    <li><code>bodyPattern</code> or <code>expectedValue</code> (no <code>headerName</code>) &rarr; validate response body</li>
+    <li>If only <code>expectedStatus</code> was set, returns after status check</li>
+</ol>
+
+<h4>Examples</h4>
+<pre><span class="cm">// Check status code</span>
+{<span class="key">"id"</span>: <span class="str">"TC_010"</span>, <span class="key">"action"</span>: <span class="str">"validate_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"expectedStatus"</span>: <span class="num">200</span>,
+ <span class="key">"description"</span>: <span class="str">"agentSlot: response 200 OK"</span>}
+
+<span class="cm">// Check response header</span>
+{<span class="key">"id"</span>: <span class="str">"TC_011"</span>, <span class="key">"action"</span>: <span class="str">"validate_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"meta-data\\.xml"</span>,
+ <span class="key">"headerName"</span>: <span class="str">"Content-Type"</span>, <span class="key">"expectedValue"</span>: <span class="str">"application/xml"</span>,
+ <span class="key">"validationType"</span>: <span class="str">"exact"</span>,
+ <span class="key">"description"</span>: <span class="str">"meta-data.xml: Content-Type is XML"</span>}
+
+<span class="cm">// Check response body (contains)</span>
+{<span class="key">"id"</span>: <span class="str">"TC_012"</span>, <span class="key">"action"</span>: <span class="str">"validate_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"meta-data\\.xml"</span>,
+ <span class="key">"bodyPattern"</span>: <span class="str">"DCServerInfo"</span>,
+ <span class="key">"validationType"</span>: <span class="str">"contains"</span>,
+ <span class="key">"description"</span>: <span class="str">"meta-data.xml: body has DCServerInfo"</span>}
+
+<span class="cm">// Check body with regex</span>
+{<span class="key">"id"</span>: <span class="str">"TC_013"</span>, <span class="key">"action"</span>: <span class="str">"validate_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"meta-data\\.xml"</span>,
+ <span class="key">"bodyPattern"</span>: <span class="str">"ProductCodes.*DCEE"</span>,
+ <span class="key">"validationType"</span>: <span class="str">"regex"</span>,
+ <span class="key">"description"</span>: <span class="str">"meta-data.xml: ProductCodes contains DCEE"</span>}
+
+<span class="cm">// Status + body check (both validated)</span>
+{<span class="key">"id"</span>: <span class="str">"TC_014"</span>, <span class="key">"action"</span>: <span class="str">"validate_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"expectedStatus"</span>: <span class="num">200</span>,
+ <span class="key">"bodyPattern"</span>: <span class="str">"RESOURCE_ID"</span>, <span class="key">"validationType"</span>: <span class="str">"contains"</span>,
+ <span class="key">"description"</span>: <span class="str">"agentSlot: 200 OK and body has RESOURCE_ID"</span>}
+
+<span class="cm">// Verify a 404 is returned</span>
+{<span class="key">"id"</span>: <span class="str">"TC_015"</span>, <span class="key">"action"</span>: <span class="str">"validate_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"boundary-list\\.xml"</span>, <span class="key">"expectedStatus"</span>: <span class="num">404</span>,
+ <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"boundary-list.xml: expected 404"</span>}</pre>
+
+<!-- ─────────────────── modify_response ─────────────────── -->
+<hr class="divider">
+<div class="action-header" id="modify_response">
+    <h3>modify_response</h3> <span class="badge-action">INJECT</span>
+</div>
+<p>Add a response injection rule. When the proxy sees a matching request, it alters the response before sending it back.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>urlPattern</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Regex to match request URL</td></tr>
+<tr><td>method</td><td>string</td><td>""</td><td>Optional method filter</td></tr>
+<tr><td>injectStatus</td><td>integer</td><td>0</td><td>Status code to inject (overrides real response)</td></tr>
+<tr><td>injectBody</td><td>string</td><td>""</td><td>Response body to inject</td></tr>
+<tr><td>injectHeaders</td><td>object</td><td>{}</td><td>Headers to inject/override: <code>{"Header-Name": "value"}</code></td></tr>
+<tr><td>persistent</td><td>boolean</td><td>false</td><td><code>true</code> = stays active; <code>false</code> = removed after first match</td></tr>
+</table>
+
+<div class="warn-box">
+    <strong>Must call <code>start_proxy</code> first.</strong> Rules only apply to traffic arriving <strong>after</strong> the rule is added.
+</div>
+
+<pre><span class="cm">// Return 500 error on meta-data.xml</span>
+{<span class="key">"id"</span>: <span class="str">"INJECT_001"</span>, <span class="key">"action"</span>: <span class="str">"modify_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"meta-data\\.xml"</span>,
+ <span class="key">"injectStatus"</span>: <span class="num">500</span>, <span class="key">"injectBody"</span>: <span class="str">"Internal Server Error"</span>,
+ <span class="key">"persistent"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"Force 500 on meta-data.xml"</span>}
+
+<span class="cm">// Inject custom JSON response with headers</span>
+{<span class="key">"id"</span>: <span class="str">"INJECT_002"</span>, <span class="key">"action"</span>: <span class="str">"modify_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agent-settings\\.xml"</span>,
+ <span class="key">"injectStatus"</span>: <span class="num">200</span>,
+ <span class="key">"injectBody"</span>: <span class="str">"{\"error\": \"test\"}"</span>,
+ <span class="key">"injectHeaders"</span>: {<span class="key">"Content-Type"</span>: <span class="str">"application/json"</span>},
+ <span class="key">"persistent"</span>: <span class="bool">true</span>}
+
+<span class="cm">// One-shot: modify only the first matching request</span>
+{<span class="key">"id"</span>: <span class="str">"INJECT_003"</span>, <span class="key">"action"</span>: <span class="str">"modify_response"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>,
+ <span class="key">"injectStatus"</span>: <span class="num">503</span>,
+ <span class="key">"persistent"</span>: <span class="bool">false</span>,
+ <span class="key">"description"</span>: <span class="str">"Return 503 on first agentSlot only"</span>}</pre>
+
+<!-- ─────────────────── block_request ─────────────────── -->
+<div class="action-header" id="block_request">
+    <h3>block_request</h3> <span class="badge-action">INJECT</span>
+</div>
+<p>Block or delay requests matching a URL pattern.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>urlPattern</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Regex to match request URL</td></tr>
+<tr><td>method</td><td>string</td><td>""</td><td>Optional method filter</td></tr>
+<tr><td>blockAction</td><td>string</td><td>"block"</td><td><code>"block"</code> = drop request; anything else = delay mode</td></tr>
+<tr><td>delayMs</td><td>integer</td><td>0</td><td>Milliseconds to delay (in delay mode)</td></tr>
+<tr><td>persistent</td><td>boolean</td><td>false</td><td>Whether rule persists after first match</td></tr>
+</table>
+
+<pre><span class="cm">// Block all agentSlot requests</span>
+{<span class="key">"id"</span>: <span class="str">"BLOCK_001"</span>, <span class="key">"action"</span>: <span class="str">"block_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"blockAction"</span>: <span class="str">"block"</span>,
+ <span class="key">"persistent"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"Block all agentSlot requests"</span>}
+
+<span class="cm">// Add 5-second delay to all requests</span>
+{<span class="key">"id"</span>: <span class="str">"DELAY_001"</span>, <span class="key">"action"</span>: <span class="str">"block_request"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">".*"</span>, <span class="key">"blockAction"</span>: <span class="str">"delay"</span>, <span class="key">"delayMs"</span>: <span class="num">5000</span>,
+ <span class="key">"persistent"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"Delay all requests by 5 seconds"</span>}</pre>
+
+<!-- ─────────────────── assert_request_count ─────────────────── -->
+<hr class="divider">
+<div class="action-header" id="assert_request_count">
+    <h3>assert_request_count</h3> <span class="badge-action">TEST</span>
+</div>
+<p>Assert that the number of captured requests matching a pattern meets count constraints.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>urlPattern</td><td>string</td><td>&mdash;</td><td><span class="tag-req">Required</span> Regex to match request URLs</td></tr>
+<tr><td>method</td><td>string</td><td>""</td><td>Optional method filter</td></tr>
+<tr><td>expectedCount</td><td>integer</td><td>-1</td><td>Exact count expected (checked if &ge; 0)</td></tr>
+<tr><td>minCount</td><td>integer</td><td>0</td><td>Minimum threshold (checked if &gt; 0)</td></tr>
+<tr><td>maxCount</td><td>integer</td><td>0</td><td>Maximum threshold (checked if &gt; 0)</td></tr>
+</table>
+
+<p>Combine <code>minCount</code> + <code>maxCount</code> for range check. <code>expectedCount</code> is mutually exclusive.</p>
+<p><strong>Check order:</strong> <code>expectedCount</code> &rarr; <code>minCount</code> &rarr; <code>maxCount</code>. First failure short-circuits.</p>
+
+<pre><span class="cm">// Exact count</span>
+{<span class="key">"id"</span>: <span class="str">"COUNT_001"</span>, <span class="key">"action"</span>: <span class="str">"assert_request_count"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"expectedCount"</span>: <span class="num">1</span>,
+ <span class="key">"description"</span>: <span class="str">"Exactly 1 agentSlot request"</span>}
+
+<span class="cm">// Minimum threshold</span>
+{<span class="key">"id"</span>: <span class="str">"COUNT_002"</span>, <span class="key">"action"</span>: <span class="str">"assert_request_count"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">".*"</span>, <span class="key">"minCount"</span>: <span class="num">10</span>,
+ <span class="key">"description"</span>: <span class="str">"At least 10 total requests"</span>}
+
+<span class="cm">// Range</span>
+{<span class="key">"id"</span>: <span class="str">"COUNT_003"</span>, <span class="key">"action"</span>: <span class="str">"assert_request_count"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"applicationcontrol"</span>, <span class="key">"minCount"</span>: <span class="num">1</span>, <span class="key">"maxCount"</span>: <span class="num">5</span>,
+ <span class="key">"description"</span>: <span class="str">"Between 1-5 applicationcontrol requests"</span>}
+
+<span class="cm">// Zero requests (verify NOT requested)</span>
+{<span class="key">"id"</span>: <span class="str">"COUNT_004"</span>, <span class="key">"action"</span>: <span class="str">"assert_request_count"</span>,
+ <span class="key">"urlPattern"</span>: <span class="str">"unwanted-endpoint"</span>, <span class="key">"expectedCount"</span>: <span class="num">0</span>,
+ <span class="key">"description"</span>: <span class="str">"No requests to unwanted-endpoint"</span>}</pre>
+
+<!-- ─────────────────── assert_request_order ─────────────────── -->
+<div class="action-header" id="assert_request_order">
+    <h3>assert_request_order</h3> <span class="badge-action">TEST</span>
+</div>
+<p>Verify that captured requests matching a sequence of URL patterns arrived in the correct order.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>expectedOrder</td><td>array</td><td>&mdash;</td><td><span class="tag-req">Required</span> List of URL regex patterns (minimum 2). Must appear in this order.</td></tr>
+</table>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"ORDER_001"</span>, <span class="key">"action"</span>: <span class="str">"assert_request_order"</span>,
+ <span class="key">"expectedOrder"</span>: [<span class="str">"agentSlot"</span>, <span class="str">"meta-data\\.xml"</span>, <span class="str">"agent-settings\\.xml"</span>],
+ <span class="key">"description"</span>: <span class="str">"Verify request sequence"</span>}</pre>
+
+<p><strong>How it works:</strong> For each pattern, finds the <strong>first</strong> occurrence in the captured flow list. Checks indices are strictly ascending.</p>
+
+<!-- ─────────────────── capture_traffic ─────────────────── -->
+<div class="action-header" id="capture_traffic">
+    <h3>capture_traffic</h3> <span class="badge-action">SAVE</span>
+</div>
+<p>Dump all captured HTTP traffic to a JSON file.</p>
+
+<table class="field-table">
+<tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+<tr><td>captureFile</td><td>string</td><td>"Reports/traffic-capture.json"</td><td>Output file path</td></tr>
+</table>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"SAVE_001"</span>, <span class="key">"action"</span>: <span class="str">"capture_traffic"</span>,
+ <span class="key">"captureFile"</span>: <span class="str">"Reports/my-test-traffic.json"</span>,
+ <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>,
+ <span class="key">"description"</span>: <span class="str">"Save captured traffic"</span>}</pre>
+
+<p>Creates parent directories automatically. Always use <code>continueOnFailure: true</code>.</p>
+
+<!-- ─────────────────── clear_captures ─────────────────── -->
+<div class="action-header" id="clear_captures">
+    <h3>clear_captures</h3> <span class="badge-action">SETUP</span>
+</div>
+<p>Reset the traffic capture buffer. Call this <strong>before</strong> triggering agent activity for a clean slate.</p>
+
+<pre>{<span class="key">"id"</span>: <span class="str">"RESET"</span>, <span class="key">"action"</span>: <span class="str">"clear_captures"</span>,
+ <span class="key">"description"</span>: <span class="str">"Reset capture buffer"</span>}</pre>
+
+<p>No additional fields. Only clears the in-memory flow buffer. Does <strong>not</strong> clear response modification rules.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="validation-types">6. Validation Types</h2>
+<p>Used with <code>validationType</code> in <code>validate_request</code> and <code>validate_response</code>:</p>
+
+<table>
+<tr><th>Type</th><th>Behavior</th><th>Example Match</th></tr>
+<tr><td><code>contains</code></td><td>Value contains expected substring <span class="tag">default</span></td><td><code>"Hello World"</code> contains <code>"World"</code> <span class="check">&#10004;</span></td></tr>
+<tr><td><code>exact</code></td><td>Full string equality</td><td><code>"Hello"</code> == <code>"Hello"</code> <span class="check">&#10004;</span></td></tr>
+<tr><td><code>startswith</code></td><td>Starts with expected prefix</td><td><code>"Basic abc123"</code> starts with <code>"Basic "</code> <span class="check">&#10004;</span></td></tr>
+<tr><td><code>endswith</code></td><td>Ends with expected suffix</td><td><code>"image/png"</code> ends with <code>"/png"</code> <span class="check">&#10004;</span></td></tr>
+<tr><td><code>regex</code></td><td>Python regex pattern match</td><td><code>"resourceId=42"</code> matches <code>"resourceId=\\d+"</code> <span class="check">&#10004;</span></td></tr>
+<tr><td><code>notempty</code></td><td>Value exists and is not empty</td><td>Header present with any value <span class="check">&#10004;</span></td></tr>
+<tr><td><code>isempty</code></td><td>Value is empty or missing</td><td>Header not present or blank <span class="check">&#10004;</span></td></tr>
+</table>
+
+<h3>Case Sensitivity</h3>
+<ul>
+    <li><strong>Default:</strong> <code>caseSensitive: false</code> &mdash; all comparisons are case-insensitive</li>
+    <li>Set <code>caseSensitive: true</code> for exact case matching (e.g., <code>User-Agent</code> header value)</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="flow-patterns">7. Test Flow Patterns &amp; Templates</h2>
+
+<h3>Standard Validation Test</h3>
+<p>The recommended pattern for a full validation test:</p>
+
+<div class="flow-box">
+SETUP &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Environment preparation (cert, registry, proxy, OS locks, trigger)<br>
+&nbsp;&nbsp; &darr;<br>
+WAIT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Wait for expected traffic to arrive<br>
+&nbsp;&nbsp; &darr;<br>
+TEST CASES &nbsp; Validate requests, responses, counts, order<br>
+&nbsp;&nbsp; &darr;<br>
+SAVE &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Capture traffic to file<br>
+&nbsp;&nbsp; &darr;<br>
+CLEANUP &nbsp;&nbsp;&nbsp;&nbsp; Reverse all OS changes, restore registry, stop proxy
+</div>
+
+<h3>Minimal Template</h3>
+<pre>[
+    <span class="cm">// ─── SETUP ────────────────────────────────────────────</span>
+    {<span class="key">"id"</span>: <span class="str">"SETUP_001"</span>, <span class="key">"action"</span>: <span class="str">"install_certificate"</span>, <span class="key">"certAction"</span>: <span class="str">"install"</span>},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_002"</span>, <span class="key">"action"</span>: <span class="str">"patch_registry"</span>,
+     <span class="key">"registryKey"</span>: <span class="str">"HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo"</span>,
+     <span class="key">"registryAction"</span>: <span class="str">"patch"</span>,
+     <span class="key">"oldValues"</span>: [<span class="str">"&lt;SERVER_HOSTNAME&gt;"</span>, <span class="str">"&lt;SERVER_IP&gt;"</span>, <span class="str">"8383"</span>],
+     <span class="key">"newValues"</span>: [<span class="str">"127.0.0.1"</span>, <span class="str">"127.0.0.1"</span>, <span class="str">"8080"</span>]},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_003"</span>, <span class="key">"action"</span>: <span class="str">"start_proxy"</span>, <span class="key">"listenPort"</span>: <span class="num">8080</span>,
+     <span class="key">"mode"</span>: <span class="str">"reverse:https://&lt;SERVER_IP&gt;:8383"</span>, <span class="key">"sslInsecure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_004"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+     <span class="key">"commandLine"</span>: <span class="str">"powershell ... Add-Content hosts '`n127.0.0.1 &lt;SERVER_HOSTNAME&gt;'"</span>,
+     <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_005"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+     <span class="key">"commandLine"</span>: <span class="str">"netsh interface portproxy add v4tov4 listenport=8383 listenaddress=127.0.0.1 connectport=8080 connectaddress=127.0.0.1"</span>,
+     <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_006"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+     <span class="key">"commandLine"</span>: <span class="str">"netsh advfirewall firewall add rule name=\"BlockUEMSDirectServer\" dir=out action=block protocol=TCP remoteip=&lt;SERVER_IP&gt; remoteport=8383"</span>,
+     <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_007"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>, <span class="key">"commandLine"</span>: <span class="str">"ipconfig /flushdns"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_008"</span>, <span class="key">"action"</span>: <span class="str">"clear_captures"</span>},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_009"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+     <span class="key">"commandLine"</span>: <span class="str">"\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\""</span>,
+     <span class="key">"timeout"</span>: <span class="num">30</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+
+    <span class="cm">// ─── WAIT ─────────────────────────────────────────────</span>
+    {<span class="key">"id"</span>: <span class="str">"WAIT_001"</span>, <span class="key">"action"</span>: <span class="str">"wait_for_request"</span>, <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"timeout"</span>: <span class="num">180</span>},
+    {<span class="key">"id"</span>: <span class="str">"WAIT_002"</span>, <span class="key">"action"</span>: <span class="str">"wait_for_request"</span>, <span class="key">"urlPattern"</span>: <span class="str">"meta-data\\.xml"</span>, <span class="key">"timeout"</span>: <span class="num">60</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+
+    <span class="cm">// ─── TEST CASES ───────────────────────────────────────</span>
+    {<span class="key">"id"</span>: <span class="str">"TC_001"</span>, <span class="key">"action"</span>: <span class="str">"validate_request"</span>, <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"method"</span>: <span class="str">"GET"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"TC_002"</span>, <span class="key">"action"</span>: <span class="str">"validate_response"</span>, <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"expectedStatus"</span>: <span class="num">200</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    <span class="cm">// ... add more TCs here ...</span>
+
+    <span class="cm">// ─── SAVE ─────────────────────────────────────────────</span>
+    {<span class="key">"id"</span>: <span class="str">"SAVE_001"</span>, <span class="key">"action"</span>: <span class="str">"capture_traffic"</span>, <span class="key">"captureFile"</span>: <span class="str">"Reports/test-traffic.json"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+
+    <span class="cm">// ─── CLEANUP ──────────────────────────────────────────</span>
+    {<span class="key">"id"</span>: <span class="str">"CLEANUP_001"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+     <span class="key">"commandLine"</span>: <span class="str">"netsh advfirewall firewall delete rule name=\"BlockUEMSDirectServer\""</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"CLEANUP_002"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+     <span class="key">"commandLine"</span>: <span class="str">"netsh interface portproxy delete v4tov4 listenport=8383 listenaddress=127.0.0.1"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"CLEANUP_003"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+     <span class="key">"commandLine"</span>: <span class="str">"powershell ... remove hosts entry ..."</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"CLEANUP_004"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>, <span class="key">"commandLine"</span>: <span class="str">"ipconfig /flushdns"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"CLEANUP_005"</span>, <span class="key">"action"</span>: <span class="str">"patch_registry"</span>,
+     <span class="key">"registryKey"</span>: <span class="str">"HKLM\\SOFTWARE\\...\\ServerInfo"</span>,
+     <span class="key">"registryAction"</span>: <span class="str">"restore"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"CLEANUP_006"</span>, <span class="key">"action"</span>: <span class="str">"stop_proxy"</span>}
+]</pre>
+
+<h3>Failure Simulation Template</h3>
+<pre>[
+    {<span class="key">"id"</span>: <span class="str">"SETUP_001"</span>, <span class="key">"action"</span>: <span class="str">"start_proxy"</span>, <span class="key">"listenPort"</span>: <span class="num">8080</span>,
+     <span class="key">"mode"</span>: <span class="str">"reverse:https://&lt;SERVER_IP&gt;:8383"</span>, <span class="key">"sslInsecure"</span>: <span class="bool">true</span>},
+
+    <span class="cm">// Inject failures BEFORE triggering agent</span>
+    {<span class="key">"id"</span>: <span class="str">"INJECT_001"</span>, <span class="key">"action"</span>: <span class="str">"modify_response"</span>,
+     <span class="key">"urlPattern"</span>: <span class="str">"meta-data\\.xml"</span>, <span class="key">"injectStatus"</span>: <span class="num">500</span>,
+     <span class="key">"injectBody"</span>: <span class="str">"Internal Server Error"</span>, <span class="key">"persistent"</span>: <span class="bool">true</span>},
+
+    {<span class="key">"id"</span>: <span class="str">"INJECT_002"</span>, <span class="key">"action"</span>: <span class="str">"block_request"</span>,
+     <span class="key">"urlPattern"</span>: <span class="str">"agent-settings"</span>, <span class="key">"blockAction"</span>: <span class="str">"delay"</span>, <span class="key">"delayMs"</span>: <span class="num">10000</span>,
+     <span class="key">"persistent"</span>: <span class="bool">true</span>},
+
+    {<span class="key">"id"</span>: <span class="str">"SETUP_008"</span>, <span class="key">"action"</span>: <span class="str">"clear_captures"</span>},
+    {<span class="key">"id"</span>: <span class="str">"SETUP_009"</span>, <span class="key">"action"</span>: <span class="str">"run_command"</span>,
+     <span class="key">"commandLine"</span>: <span class="str">"\"...\\cfgupdate.exe\""</span>, <span class="key">"timeout"</span>: <span class="num">30</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+
+    {<span class="key">"id"</span>: <span class="str">"WAIT_001"</span>, <span class="key">"action"</span>: <span class="str">"wait_for_request"</span>, <span class="key">"urlPattern"</span>: <span class="str">"agentSlot"</span>, <span class="key">"timeout"</span>: <span class="num">180</span>},
+
+    <span class="cm">// Did the agent retry after 500?</span>
+    {<span class="key">"id"</span>: <span class="str">"TC_001"</span>, <span class="key">"action"</span>: <span class="str">"assert_request_count"</span>,
+     <span class="key">"urlPattern"</span>: <span class="str">"meta-data\\.xml"</span>, <span class="key">"minCount"</span>: <span class="num">2</span>,
+     <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>,
+     <span class="key">"description"</span>: <span class="str">"Agent retried meta-data.xml after 500"</span>},
+
+    {<span class="key">"id"</span>: <span class="str">"SAVE_001"</span>, <span class="key">"action"</span>: <span class="str">"capture_traffic"</span>,
+     <span class="key">"captureFile"</span>: <span class="str">"Reports/failure-sim-traffic.json"</span>, <span class="key">"continueOnFailure"</span>: <span class="bool">true</span>},
+    {<span class="key">"id"</span>: <span class="str">"CLEANUP_001"</span>, <span class="key">"action"</span>: <span class="str">"stop_proxy"</span>}
+]</pre>
+
+<h3>Quick Smoke Test</h3>
+<pre>[
+    {<span class="key">"id"</span>: <span class="str">"SMOKE_001"</span>, <span class="key">"action"</span>: <span class="str">"start_proxy"</span>, <span class="key">"listenPort"</span>: <span class="num">8080</span>},
+    {<span class="key">"id"</span>: <span class="str">"SMOKE_002"</span>, <span class="key">"action"</span>: <span class="str">"clear_captures"</span>},
+    {<span class="key">"id"</span>: <span class="str">"SMOKE_003"</span>, <span class="key">"action"</span>: <span class="str">"assert_request_count"</span>, <span class="key">"urlPattern"</span>: <span class="str">".*"</span>, <span class="key">"expectedCount"</span>: <span class="num">0</span>},
+    {<span class="key">"id"</span>: <span class="str">"SMOKE_004"</span>, <span class="key">"action"</span>: <span class="str">"capture_traffic"</span>, <span class="key">"captureFile"</span>: <span class="str">"Reports/smoke.json"</span>},
+    {<span class="key">"id"</span>: <span class="str">"SMOKE_005"</span>, <span class="key">"action"</span>: <span class="str">"stop_proxy"</span>}
+]</pre>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="test-files">8. Complete Examples &mdash; Existing Test Files</h2>
+<p>The <code>TestData/</code> directory ships with <strong>10 ready-to-use JSON test files</strong>. They are grouped below by workflow.</p>
+
+<h3>A. CSR Split Suite (3 files &mdash; run in order)</h3>
+<p>Designed for the CSR (Certificate Signing Request) validation workflow where you start the proxy in one execution and validate in another.</p>
+<table>
+<tr><th>File</th><th>Commands</th><th>Purpose</th></tr>
+<tr><td><code>csr_cert_load_test.json</code></td><td>7</td><td>Start proxy, load mTLS client cert from vault, configure system proxy, add response rules, then wait for requests with live capture file</td></tr>
+<tr><td><code>csr_validate_test.json</code></td><td>12</td><td>Load captured traffic, validate CSR request body/headers/method, assert response status, assert request count &amp; order</td></tr>
+<tr><td><code>csr_stop_proxy.json</code></td><td>4</td><td>Restore registry, remove hosts entry, deconfigure system proxy, stop the proxy</td></tr>
+</table>
+<pre><span class="cm">:: Run in order:</span>
+CommunicationAutomation.exe TestData\csr_cert_load_test.json --show-all
+<span class="cm">:: (trigger agent cfgupdate on the machine)</span>
+CommunicationAutomation.exe TestData\csr_validate_test.json --show-all
+CommunicationAutomation.exe TestData\csr_stop_proxy.json --show-all</pre>
+
+<h3>B. CSR Single-Execution Tests (2 files)</h3>
+<table>
+<tr><th>File</th><th>Commands</th><th>Purpose</th></tr>
+<tr><td><code>csr_capture_test.json</code></td><td>10</td><td>Full end-to-end: start proxy, add rules, wait for CSR traffic, capture to file, stop proxy</td></tr>
+<tr><td><code>csr_validation_test.json</code></td><td>15</td><td>All-in-one: start proxy, rules, wait, validate request/response, assert count/order, capture, stop</td></tr>
+</table>
+
+<h3>C. General Validation (2 files)</h3>
+<table>
+<tr><th>File</th><th>Commands</th><th>Purpose</th></tr>
+<tr><td><code>general_validation.json</code></td><td>12</td><td>Comprehensive multi-endpoint validation with TC numbering by endpoint (TC_1xx&ndash;TC_17xx)</td></tr>
+<tr><td><code>validate_traffic.json</code></td><td>8</td><td>Load previously captured traffic, validate requests &amp; responses, assert counts</td></tr>
+</table>
+
+<h3>D. Utility &amp; Reference (3 files)</h3>
+<table>
+<tr><th>File</th><th>Commands</th><th>Purpose</th></tr>
+<tr><td><code>smoke_test.json</code></td><td>5</td><td>Quick health check: start proxy &rarr; clear &rarr; assert zero &rarr; capture &rarr; stop</td></tr>
+<tr><td><code>sample_test.json</code></td><td>3</td><td>Minimal skeleton for new tests: start &rarr; wait &rarr; stop</td></tr>
+<tr><td><code>record_traffic.json</code></td><td>6</td><td>Interactive recording: start proxy, wait for Ctrl+C interrupt, capture all traffic to file, stop</td></tr>
+</table>
+
+<h3>Choosing the Right Test File</h3>
+<table>
+<tr><th>Goal</th><th>Recommended File(s)</th></tr>
+<tr><td>Verify the tool works at all</td><td><code>smoke_test.json</code></td></tr>
+<tr><td>Explore agent traffic interactively</td><td><code>record_traffic.json</code></td></tr>
+<tr><td>Capture CSR traffic for later review</td><td><code>csr_capture_test.json</code></td></tr>
+<tr><td>Full CSR capture + validation in one go</td><td><code>csr_validation_test.json</code></td></tr>
+<tr><td>Split capture and validation steps</td><td><code>csr_cert_load_test.json</code> &rarr; <code>csr_validate_test.json</code> &rarr; <code>csr_stop_proxy.json</code></td></tr>
+<tr><td>Validate previously saved traffic</td><td><code>validate_traffic.json</code></td></tr>
+<tr><td>Multi-endpoint deep validation</td><td><code>general_validation.json</code></td></tr>
+<tr><td>Start a new test from scratch</td><td>Copy <code>sample_test.json</code></td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="naming">9. Naming Conventions</h2>
+
+<h3>Command ID Prefixes</h3>
+<table>
+<tr><th>Prefix</th><th>Purpose</th><th>Example</th></tr>
+<tr><td><code>SETUP_NNN</code></td><td>Environment setup (cert, registry, proxy, OS locks)</td><td>SETUP_001</td></tr>
+<tr><td><code>WAIT_NNN</code></td><td>Traffic wait steps</td><td>WAIT_001</td></tr>
+<tr><td><code>TC_NNN</code></td><td>Test case assertions</td><td>TC_001, TC_100</td></tr>
+<tr><td><code>SAVE_NNN</code></td><td>Traffic capture/export</td><td>SAVE_001</td></tr>
+<tr><td><code>CLEANUP_NNN</code></td><td>Environment teardown</td><td>CLEANUP_001</td></tr>
+<tr><td><code>SMOKE_NNN</code></td><td>Smoke test steps</td><td>SMOKE_001</td></tr>
+<tr><td><code>REC_NNN</code></td><td>Recording session steps</td><td>REC_001</td></tr>
+<tr><td><code>INJECT_NNN</code></td><td>Response injection rules</td><td>INJECT_001</td></tr>
+<tr><td><code>BLOCK_NNN</code></td><td>Request blocking rules</td><td>BLOCK_001</td></tr>
+</table>
+
+<h3>Test Case Numbering by Endpoint</h3>
+<p>For comprehensive validation files, group TCs by endpoint using hundreds:</p>
+<table>
+<tr><th>Range</th><th>Endpoint</th><th></th><th>Range</th><th>Endpoint</th></tr>
+<tr><td><code>TC_1xx</code></td><td>agentSlot</td><td></td><td><code>TC_10xx</code></td><td>edr-meta-data.json</td></tr>
+<tr><td><code>TC_2xx</code></td><td>endpointdlp</td><td></td><td><code>TC_11xx</code></td><td>agentcrashreport</td></tr>
+<tr><td><code>TC_3xx</code></td><td>meta-data.xml</td><td></td><td><code>TC_12xx</code></td><td>applicationcontrol (store apps)</td></tr>
+<tr><td><code>TC_4xx</code></td><td>resource.xml</td><td></td><td><code>TC_13xx</code></td><td>applicationcontrol (installed apps)</td></tr>
+<tr><td><code>TC_5xx</code></td><td>log-upload-settings.json</td><td></td><td><code>TC_14xx</code></td><td>discovery-and-remediation</td></tr>
+<tr><td><code>TC_6xx</code></td><td>customer-meta-data.json</td><td></td><td><code>TC_15xx</code></td><td>404 / boundary responses</td></tr>
+<tr><td><code>TC_7xx</code></td><td>dlp-globalsetting.json</td><td></td><td><code>TC_16xx</code></td><td>Request count assertions</td></tr>
+<tr><td><code>TC_8xx</code></td><td>agent-settings.xml</td><td></td><td><code>TC_17xx</code></td><td>Request ordering assertions</td></tr>
+<tr><td><code>TC_9xx</code></td><td>agent-security-setting.json</td><td></td><td></td><td></td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="machine-values">10. Machine-Specific Values</h2>
+<p>These values change per machine and must be updated in every test JSON:</p>
+
+<table>
+<tr><th>Placeholder</th><th>Where to Find It</th><th>Example</th></tr>
+<tr><td><code>&lt;SERVER_HOSTNAME&gt;</code></td><td>Registry: <code>DCNSLastAccessName</code> under ServerInfo key</td><td>naveen-14097</td></tr>
+<tr><td><code>&lt;SERVER_IP&gt;</code></td><td>Registry: <code>DCIPAddress</code> under ServerInfo key, or <code>nslookup &lt;hostname&gt;</code></td><td>10.69.73.19</td></tr>
+<tr><td><code>&lt;SERVER_PORT&gt;</code></td><td>Registry: <code>DCHTTPSPort</code> under ServerInfo key (usually 8383)</td><td>8383</td></tr>
+</table>
+
+<div class="section-box">
+    <strong>Quick check:</strong> Open <code>regedit</code> and navigate to:<br>
+    <code style="font-size:12px;">HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\AdventNet\DesktopCentral\DCAgent\ServerInfo</code>
+</div>
+
+<p><strong>These values appear in:</strong></p>
+<ul>
+    <li><code>patch_registry</code> &rarr; <code>oldValues</code> array</li>
+    <li><code>start_proxy</code> &rarr; <code>mode</code> field (<code>reverse:https://&lt;IP&gt;:&lt;PORT&gt;</code>)</li>
+    <li><code>run_command</code> &rarr; hosts file, firewall, port proxy commands</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="troubleshooting">11. Troubleshooting</h2>
+
+<h3>Common Issues</h3>
+<table>
+<tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+<tr><td><code>Action 'xyz' is not supported</code></td><td>Typo in action name</td><td>Check spelling; names are case-insensitive</td></tr>
+<tr><td><code>No traffic store</code></td><td><code>start_proxy</code> not called or failed</td><td>Verify proxy started before traffic actions</td></tr>
+<tr><td><code>No matching flow found</code></td><td>URL pattern doesn't match</td><td>Check regex; use <code>.*</code> wildcards liberally</td></tr>
+<tr><td><code>Timeout waiting for request</code></td><td>Agent traffic hasn't arrived</td><td>Increase <code>timeout</code>; verify cfgupdate ran</td></tr>
+<tr><td>Cleanup didn't run</td><td>Command failed without <code>continueOnFailure</code></td><td>Add <code>continueOnFailure: true</code> to non-critical steps</td></tr>
+<tr><td>Hosts file entry persists</td><td>Test aborted before cleanup</td><td>Manually edit <code>C:\Windows\System32\drivers\etc\hosts</code></td></tr>
+<tr><td>Registry not restored</td><td>Test aborted before cleanup</td><td>Run a standalone restore JSON</td></tr>
+<tr><td>Variable not substituted</td><td>Step ID typo or step didn't execute</td><td>Verify step IDs match exactly</td></tr>
+<tr><td>Port 8080 in use</td><td>Previous proxy not stopped</td><td><code>netstat -ano | findstr 8080</code> and kill</td></tr>
+</table>
+
+<h3>URL Pattern Tips</h3>
+<ul>
+    <li>Patterns are <strong>Python regex</strong> &mdash; escape dots: <code>meta-data\\.xml</code></li>
+    <li>Use <code>.*</code> for flexible matching: <code>agentSlot.*AgentOfset</code></li>
+    <li>Test patterns at <a href="https://regex101.com" target="_blank">regex101.com</a> (select Python flavor)</li>
+    <li>An empty pattern matches everything</li>
+</ul>
+
+<h3>Running Tests</h3>
+<pre><span class="cm"># Run with full output (PASSED + FAILED)</span>
+CommunicationAutomation.exe TestData\my_test.json --show-all
+
+<span class="cm"># Run with failures only (default)</span>
+CommunicationAutomation.exe TestData\my_test.json
+
+<span class="cm"># From source</span>
+python main.py TestData\my_test.json --show-all</pre>
+
+<h3>Exit Codes</h3>
+<table>
+<tr><th>Code</th><th>Meaning</th></tr>
+<tr><td><strong>0</strong></td><td>All tests passed</td></tr>
+<tr><td><strong>1</strong></td><td>One or more tests failed</td></tr>
+<tr><td><strong>5</strong></td><td>Test file not found</td></tr>
+<tr><td><strong>99</strong></td><td>Critical unhandled error</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="footer">
+    CommunicationAutomation &mdash; Test Data Reference &mdash; Generated Feb 2026
+</div>
+
+</body>
+</html>

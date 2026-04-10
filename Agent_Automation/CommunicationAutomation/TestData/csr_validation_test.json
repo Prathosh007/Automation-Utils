@@ -1,0 +1,89 @@
+[
+    {"id": "SETUP_001", "action": "install_certificate", "certAction": "install",
+     "description": "Install mitmproxy CA cert"},
+
+    {"id": "SETUP_002", "action": "start_proxy",
+     "listenHost": "127.0.0.1", "listenPort": 8080,
+     "mode": "reverse:https://172.24.148.221:8383",
+     "sslInsecure": true,
+     "autoLoadCert": true,
+     "description": "Start reverse proxy -> real server (auto-loads agent certs on CSR)"},
+
+    {"id": "SETUP_003", "action": "clear_captures",
+     "description": "Reset capture buffer"},
+
+    {"id": "TC_CSR_001", "action": "validate_request",
+     "urlPattern": "clientCSRSigningServlet",
+     "method": "POST",
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: verify method is POST"},
+
+    {"id": "TC_CSR_002", "action": "validate_request",
+     "urlPattern": "clientCSRSigningServlet",
+     "headerName": "Content-Type", "expectedValue": "application/x-www-form-urlencoded",
+     "validationType": "contains",
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: Content-Type contains form-urlencoded"},
+
+    {"id": "TC_CSR_003", "action": "validate_request",
+     "urlPattern": "clientCSRSigningServlet",
+     "headerName": "User-Agent", "expectedValue": ".*",
+     "validationType": "notempty",
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: User-Agent header is not empty"},
+
+    {"id": "TC_CSR_004", "action": "validate_request",
+     "urlPattern": "clientCSRSigningServlet",
+     "bodyPattern": "BEGIN CERTIFICATE REQUEST",
+     "validationType": "contains",
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: body contains CSR PEM block"},
+
+    {"id": "TC_CSR_005", "action": "validate_request",
+     "urlPattern": "clientCSRSigningServlet",
+     "bodyPattern": "END CERTIFICATE REQUEST",
+     "validationType": "contains",
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: body contains CSR PEM end marker"},
+
+    {"id": "TC_CSR_006", "action": "validate_request",
+     "urlPattern": "clientCSRSigningServlet",
+     "expectedValue": "clientCSRSigningServlet",
+     "validationType": "contains",
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: URL path contains servlet name"},
+
+    {"id": "TC_CSR_007", "action": "validate_response",
+     "urlPattern": "clientCSRSigningServlet",
+     "expectedStatus": 200,
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: response is 200 OK"},
+
+    {"id": "TC_CSR_008", "action": "validate_response",
+     "urlPattern": "clientCSRSigningServlet",
+     "bodyPattern": ".*",
+     "validationType": "notempty",
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: response body is not empty"},
+
+    {"id": "TC_CSR_009", "action": "validate_response",
+     "urlPattern": "clientCSRSigningServlet",
+     "bodyPattern": "BEGIN CERTIFICATE",
+     "validationType": "contains",
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: response contains signed certificate PEM"},
+
+    {"id": "TC_CSR_010", "action": "assert_request_count",
+     "urlPattern": "clientCSRSigningServlet",
+     "expectedCount": 1,
+     "continueOnFailure": true,
+     "description": "clientCSRSigningServlet: exactly 1 CSR request captured"},
+
+    {"id": "SAVE_001", "action": "capture_traffic",
+     "captureFile": "Reports/csr-validation-traffic.json",
+     "continueOnFailure": true,
+     "description": "Save captured traffic"},
+
+    {"id": "CLEANUP_001", "action": "stop_proxy",
+     "description": "Stop proxy"}
+]

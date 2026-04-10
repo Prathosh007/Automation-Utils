@@ -1,0 +1,67 @@
+[
+    {"id": "SETUP_001", "action": "install_certificate", "certAction": "install",
+     "description": "Install mitmproxy CA cert"},
+
+    {"id": "SETUP_002", "action": "start_proxy",
+     "listenHost": "127.0.0.1", "listenPort": 8080,
+     "mode": "reverse:https://172.24.148.221:8383",
+     "sslInsecure": true,
+     "description": "Start reverse proxy -> real server"},
+
+    {"id": "SETUP_003", "action": "clear_captures",
+     "description": "Reset capture buffer"},
+
+    {"id": "WAIT_CSR", "action": "wait_for_request",
+     "urlPattern": "ClientCSRSign",
+     "timeout": 600,
+     "description": "Wait up to 10 min for CSR request (install agent now)"},
+
+    {"id": "TC_CSR_001", "action": "validate_response",
+     "urlPattern": "ClientCSRSign",
+     "expectedStatus": 200,
+     "continueOnFailure": true,
+     "description": "CSR response: 200 OK (cert signed)"},
+
+    {"id": "LOAD_CERT", "action": "load_client_cert",
+     "continueOnFailure": true,
+     "description": "Read key.pem + client.pem from vault and hot-reload into proxy"},
+
+    {"id": "WAIT_AUTH", "action": "wait_for_request",
+     "urlPattern": "agentAuthPropsRequest",
+     "method": "POST",
+     "timeout": 120,
+     "description": "Wait for agentAuthPropsRequest POST (first mTLS request after CSR)"},
+
+    {"id": "TC_AUTH_001", "action": "validate_request",
+     "urlPattern": "agentAuthPropsRequest",
+     "method": "POST",
+     "continueOnFailure": true,
+     "description": "agentAuthPropsRequest: verify first request is POST"},
+
+    {"id": "TC_AUTH_002", "action": "validate_response",
+     "urlPattern": "agentAuthPropsRequest",
+     "expectedStatus": 200,
+     "continueOnFailure": true,
+     "description": "agentAuthPropsRequest: verify 200 OK (mTLS working)"},
+
+    {"id": "TC_AUTH_003", "action": "validate_response",
+     "urlPattern": "agentAuthPropsRequest",
+     "bodyPattern": ".*",
+     "validationType": "notempty",
+     "continueOnFailure": true,
+     "description": "agentAuthPropsRequest: verify response body not empty"},
+
+    {"id": "WAIT_MORE", "action": "wait_for_request",
+     "urlPattern": "____WAIT_10_MIN_SENTINEL____",
+     "timeout": 600,
+     "continueOnFailure": true,
+     "description": "Wait 10 min to capture more agent traffic"},
+
+    {"id": "SAVE_001", "action": "capture_traffic",
+     "captureFile": "Reports/csr-auth-traffic.json",
+     "continueOnFailure": true,
+     "description": "Save all captured traffic"},
+
+    {"id": "CLEANUP_001", "action": "stop_proxy",
+     "description": "Stop proxy"}
+]

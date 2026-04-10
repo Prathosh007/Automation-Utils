@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c '\"\"D:\\\\Development\\\\Automation\\\\uems_agent_internal\\\\native\\\\Agent_Automation\\\\CommunicationAutomation\\\\.venv\\\\Scripts\\\\python.exe\"\" -c \"\"print\\(\\\\\"\"Python subprocess OK\\\\\"\"\\)\"\"')",
+      "Bash(cmd.exe /c \"build.bat < nul\")",
+      "Bash(.venv/Scripts/pip.exe install:*)",
+      "Bash(.venv/Scripts/pyinstaller.exe CommunicationAutomation.spec --noconfirm)",
+      "Read(//c/Users/naveen-14097/Pictures/**)",
+      "Read(//c/Users/naveen-14097/Pictures/Screenshots/**)",
+      "Bash(.venvScriptspyinstaller.exe CommunicationAutomation.spec --noconfirm)"
+    ]
+  }
+}

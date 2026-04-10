@@ -1,0 +1,81 @@
+[
+    {"id": "SETUP_001", "action": "install_certificate", "cert_action": "install", "description": "Install mitmproxy CA cert"},
+    {"id": "SETUP_002", "action": "start_proxy", "listen_host": "127.0.0.1", "listen_port": 8080,
+     "mode": "reverse:https://172.24.148.221:8383", "ssl_insecure": true, "description": "Start reverse proxy"},
+    {"id": "SETUP_003", "action": "traffic_lock",
+     "server_port": 8383, "redirect_port": 8080,
+     "continueOnFailure": true, "description": "Lock all port-8383 traffic through proxy"},
+    {"id": "SETUP_004", "action": "clear_captures", "description": "Reset capture buffer"},
+    {"id": "SETUP_005", "action": "run_command",
+     "command_line": "\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\"",
+     "timeout": 30, "continueOnFailure": true, "description": "Trigger cfgupdate"},
+
+    {"id": "WAIT_001", "action": "wait_for_request", "url_pattern": "agentSlot", "timeout": 180,
+     "description": "Wait for agentSlot request"},
+    {"id": "WAIT_002", "action": "wait_for_request", "url_pattern": "meta-data\\.xml", "timeout": 60,
+     "continueOnFailure": true, "description": "Wait for meta-data.xml"},
+
+    {"id": "TC_001", "action": "validate_request",
+     "url_pattern": "agentSlot", "method": "GET",
+     "description": "agentSlot: method is GET"},
+
+    {"id": "TC_002", "action": "validate_request",
+     "url_pattern": "agentSlot",
+     "header_name": "Authorization", "expected_value": "Basic ",
+     "validation_type": "startswith",
+     "description": "agentSlot: has Basic auth header"},
+
+    {"id": "TC_003", "action": "validate_response",
+     "url_pattern": "agentSlot",
+     "expected_status": 200,
+     "description": "agentSlot: response 200 OK"},
+
+    {"id": "TC_004", "action": "validate_request",
+     "url_pattern": "meta-data\\.xml", "method": "GET",
+     "continueOnFailure": true,
+     "description": "meta-data.xml: method is GET"},
+
+    {"id": "TC_005", "action": "validate_request",
+     "url_pattern": "meta-data\\.xml",
+     "header_name": "User-Agent", "expected_value": "DesktopCentral Agent",
+     "validation_type": "exact", "case_sensitive": true,
+     "continueOnFailure": true,
+     "description": "meta-data.xml: User-Agent is DesktopCentral Agent"},
+
+    {"id": "TC_006", "action": "validate_request",
+     "url_pattern": "meta-data\\.xml",
+     "expected_value": "agentResourceIdentifier",
+     "validation_type": "contains",
+     "continueOnFailure": true,
+     "description": "meta-data.xml: URL has agentResourceIdentifier param"},
+
+    {"id": "TC_007", "action": "assert_request_count",
+     "url_pattern": ".*", "min_count": 3,
+     "continueOnFailure": true,
+     "description": "At least 3 total requests captured"},
+
+    {"id": "TC_008", "action": "assert_request_count",
+     "url_pattern": "agentSlot", "min_count": 1,
+     "continueOnFailure": true,
+     "description": "At least 1 agentSlot request"},
+
+    {"id": "TC_009", "action": "assert_request_count",
+     "url_pattern": "meta-data\\.xml", "min_count": 1,
+     "continueOnFailure": true,
+     "description": "At least 1 meta-data.xml request"},
+
+    {"id": "TC_010", "action": "assert_request_order",
+     "expected_order": ["agentSlot", "meta-data\\.xml"],
+     "continueOnFailure": true,
+     "description": "Order: agentSlot before meta-data.xml"},
+
+    {"id": "SAVE_001", "action": "capture_traffic", "capture_file": "Reports/general-validation-traffic.json",
+     "continueOnFailure": true, "description": "Save captured traffic"},
+
+    {"id": "CLEANUP_001", "action": "traffic_unlock",
+     "continueOnFailure": true, "description": "Unlock traffic - restore direct flow"},
+    {"id": "CLEANUP_002", "action": "run_command",
+     "command_line": "\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\"",
+     "timeout": 30, "continueOnFailure": true, "description": "Restore agent config"},
+    {"id": "CLEANUP_003", "action": "stop_proxy", "description": "Stop proxy"}
+]

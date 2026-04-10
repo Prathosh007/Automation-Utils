@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RegistryAutomation", "RegistryAutomation.vcxproj", "{10384739-DEDD-466E-8DEE-531F6F482802}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{10384739-DEDD-466E-8DEE-531F6F482802}.Debug|x64.ActiveCfg = Debug|x64
+		{10384739-DEDD-466E-8DEE-531F6F482802}.Debug|x64.Build.0 = Debug|x64
+		{10384739-DEDD-466E-8DEE-531F6F482802}.Debug|x86.ActiveCfg = Debug|Win32
+		{10384739-DEDD-466E-8DEE-531F6F482802}.Debug|x86.Build.0 = Debug|Win32
+		{10384739-DEDD-466E-8DEE-531F6F482802}.Release|x64.ActiveCfg = Release|x64
+		{10384739-DEDD-466E-8DEE-531F6F482802}.Release|x64.Build.0 = Release|x64
+		{10384739-DEDD-466E-8DEE-531F6F482802}.Release|x86.ActiveCfg = Release|Win32
+		{10384739-DEDD-466E-8DEE-531F6F482802}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D64825DF-6319-4D62-A645-18A2DBC734A7}
+	EndGlobalSection
+EndGlobal

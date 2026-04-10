@@ -1,0 +1,101 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+main.build/
+main.dist/
+main.onefile-build/
+
+# ========================
+# C# / .NET
+# ========================
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.exe
+*.pdb
+*.nupkg
+publish/
+
+# ========================
+# C++ / Visual Studio
+# ========================
+Release/
+Debug/
+x64/
+x86/
+*.obj
+*.o
+*.lib
+*.exp
+*.ilk
+*.idb
+*.ipdb
+*.iobj
+*.tlog
+*.lastbuildstate
+*.log
+*.res
+*.manifest
+*.recipe
+*.pch
+*.ipch
+.vs/
+*.vcxproj.user
+
+# ========================
+# Java
+# ========================
+*.class
+*.jar
+*.war
+target/
+out/
+
+# ========================
+# Runtime / Output
+# ========================
+Logs/
+Reports/
+Screenshots/
+*.log
+
+# ========================
+# IDE / Editor
+# ========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========================
+# Secrets / Credentials
+# ========================
+*.pem
+*.key
+*.pfx
+*.p12
+*.env
+.env.local
+*.secret
+
+# ========================
+# OS
+# ========================
+desktop.ini
+ehthumbs.db

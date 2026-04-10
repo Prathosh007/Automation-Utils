@@ -1,0 +1,8 @@
+[
+    {"id": "STOP_001", "action": "stop_proxy",
+     "description": "Stop the background proxy process"},
+
+    {"id": "CLEANUP_001", "action": "install_certificate", "certAction": "remove",
+     "continueOnFailure": true,
+     "description": "Remove mitmproxy CA cert from trust store"}
+]

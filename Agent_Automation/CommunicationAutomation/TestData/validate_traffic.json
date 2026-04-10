@@ -1,0 +1,551 @@
+[
+    {"id": "SETUP_001", "action": "install_certificate", "cert_action": "install", "description": "Install mitmproxy CA cert"},
+    {"id": "SETUP_002", "action": "patch_registry",
+     "registry_key": "HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo",
+     "registry_action": "patch",
+     "old_values": ["prathosh-w22-11", "172.24.148.221", "8383"],
+     "new_values": ["127.0.0.1", "127.0.0.1", "8080"],
+     "description": "Redirect agent to proxy"},
+    {"id": "SETUP_003", "action": "start_proxy", "listen_host": "127.0.0.1", "listen_port": 8080,
+     "mode": "reverse:https://172.24.148.221:8383", "ssl_insecure": true, "description": "Start reverse proxy"},
+    {"id": "SETUP_004", "action": "run_command",
+     "command_line": "powershell -Command \"Add-Content 'C:\\Windows\\System32\\drivers\\etc\\hosts' '`n127.0.0.1 prathosh-w22-11'\"",
+     "continueOnFailure": true, "description": "Hosts file: redirect server hostname"},
+    {"id": "SETUP_005", "action": "run_command",
+     "command_line": "netsh interface portproxy add v4tov4 listenport=8383 listenaddress=127.0.0.1 connectport=8080 connectaddress=127.0.0.1",
+     "continueOnFailure": true, "description": "Port proxy: 127.0.0.1:8383 -> 8080"},
+    {"id": "SETUP_006", "action": "run_command",
+     "command_line": "netsh advfirewall firewall add rule name=\"BlockUEMSDirectServer\" dir=out action=block protocol=TCP remoteip=172.24.148.221 remoteport=8383",
+     "continueOnFailure": true, "description": "Firewall: block direct server access"},
+    {"id": "SETUP_007", "action": "run_command", "command_line": "ipconfig /flushdns",
+     "continueOnFailure": true, "description": "Flush DNS"},
+    {"id": "SETUP_008", "action": "clear_captures", "description": "Reset capture buffer"},
+    {"id": "SETUP_009", "action": "run_command",
+     "command_line": "\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\"",
+     "timeout": 30, "continueOnFailure": true, "description": "Trigger cfgupdate"},
+
+    {"id": "WAIT_001", "action": "wait_for_request", "url_pattern": "agentSlot", "timeout": 180,
+     "continueOnFailure": true, "description": "Wait for first agentSlot request"},
+    {"id": "WAIT_002", "action": "wait_for_request", "url_pattern": "applicationcontrol", "timeout": 120,
+     "continueOnFailure": true, "description": "Wait for applicationcontrol requests to complete"},
+
+    {
+        "id": "TC_001",
+        "action": "assert_request_count",
+        "url_pattern": ".*",
+        "min_count": 10,
+        "continueOnFailure": true,
+        "description": "Verify at least 10 total requests captured"
+    },
+
+    {
+        "id": "TC_100",
+        "action": "validate_request",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "method": "GET",
+        "description": "agentSlot: Verify method is GET"
+    },
+    {
+        "id": "TC_101",
+        "action": "validate_request",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "expected_value": "actionToCall=AgentOfset",
+        "validation_type": "contains",
+        "description": "agentSlot: Verify actionToCall=AgentOfset in URL"
+    },
+    {
+        "id": "TC_102",
+        "action": "validate_request",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "expected_value": "resourceId=\\d+",
+        "validation_type": "regex",
+        "description": "agentSlot: Verify resourceId is numeric"
+    },
+    {
+        "id": "TC_103",
+        "action": "validate_request",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "header_name": "User-Agent",
+        "expected_value": "DesktopCentral Agent",
+        "validation_type": "exact",
+        "case_sensitive": true,
+        "description": "agentSlot: Verify User-Agent header"
+    },
+    {
+        "id": "TC_104",
+        "action": "validate_request",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "header_name": "Authorization",
+        "expected_value": "Basic ",
+        "validation_type": "startswith",
+        "description": "agentSlot: Verify Basic auth is used"
+    },
+    {
+        "id": "TC_105",
+        "action": "validate_response",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "expected_status": 200,
+        "description": "agentSlot: Verify response 200 OK"
+    },
+    {
+        "id": "TC_106",
+        "action": "validate_response",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "body_pattern": "RESOURCE_ID",
+        "validation_type": "contains",
+        "description": "agentSlot: Verify response body contains RESOURCE_ID"
+    },
+    {
+        "id": "TC_107",
+        "action": "validate_response",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "body_pattern": "OFSET",
+        "validation_type": "contains",
+        "description": "agentSlot: Verify response body contains OFSET param"
+    },
+    {
+        "id": "TC_108",
+        "action": "validate_response",
+        "url_pattern": "agentSlot.*AgentOfset",
+        "header_name": "X-dc-header",
+        "expected_value": "yes",
+        "validation_type": "exact",
+        "description": "agentSlot: Verify X-dc-header confirms real server"
+    },
+
+    {
+        "id": "TC_200",
+        "action": "validate_request",
+        "url_pattern": "endpointdlp.*dlp-event-metrack-data",
+        "method": "POST",
+        "description": "endpointdlp: Verify method is POST"
+    },
+    {
+        "id": "TC_201",
+        "action": "validate_request",
+        "url_pattern": "endpointdlp.*dlp-event-metrack-data",
+        "body_pattern": "ResourceId",
+        "validation_type": "contains",
+        "description": "endpointdlp: Verify body contains ResourceId"
+    },
+    {
+        "id": "TC_202",
+        "action": "validate_request",
+        "url_pattern": "endpointdlp.*dlp-event-metrack-data",
+        "body_pattern": "ImmediatePostCount",
+        "validation_type": "contains",
+        "description": "endpointdlp: Verify body contains ImmediatePostCount field"
+    },
+    {
+        "id": "TC_203",
+        "action": "validate_response",
+        "url_pattern": "endpointdlp.*dlp-event-metrack-data",
+        "expected_status": 200,
+        "description": "endpointdlp: Verify response 200 OK"
+    },
+
+    {
+        "id": "TC_300",
+        "action": "validate_request",
+        "url_pattern": "meta-data\\.xml",
+        "method": "GET",
+        "description": "meta-data.xml: Verify method is GET"
+    },
+    {
+        "id": "TC_301",
+        "action": "validate_request",
+        "url_pattern": "meta-data\\.xml",
+        "expected_value": "client-data/1/domains/workgroup/meta-data.xml",
+        "validation_type": "contains",
+        "description": "meta-data.xml: Verify correct URL path"
+    },
+    {
+        "id": "TC_302",
+        "action": "validate_request",
+        "url_pattern": "meta-data\\.xml",
+        "header_name": "If-Modified-Since",
+        "expected_value": "",
+        "validation_type": "notempty",
+        "description": "meta-data.xml: Verify If-Modified-Since header is present"
+    },
+    {
+        "id": "TC_303",
+        "action": "validate_response",
+        "url_pattern": "meta-data\\.xml",
+        "expected_status": 200,
+        "description": "meta-data.xml: Verify response 200 OK"
+    },
+    {
+        "id": "TC_304",
+        "action": "validate_response",
+        "url_pattern": "meta-data\\.xml",
+        "header_name": "Content-Type",
+        "expected_value": "application/xml",
+        "validation_type": "exact",
+        "description": "meta-data.xml: Verify Content-Type is XML"
+    },
+    {
+        "id": "TC_305",
+        "action": "validate_response",
+        "url_pattern": "meta-data\\.xml",
+        "body_pattern": "DCServerInfo",
+        "validation_type": "contains",
+        "description": "meta-data.xml: Verify body contains DCServerInfo"
+    },
+    {
+        "id": "TC_306",
+        "action": "validate_response",
+        "url_pattern": "meta-data\\.xml",
+        "body_pattern": "https_port=\"8383\"",
+        "validation_type": "contains",
+        "description": "meta-data.xml: Verify server HTTPS port is 8383"
+    },
+    {
+        "id": "TC_307",
+        "action": "validate_response",
+        "url_pattern": "meta-data\\.xml",
+        "body_pattern": "ProductCodes.*DCEE",
+        "validation_type": "regex",
+        "description": "meta-data.xml: Verify ProductCodes contains DCEE"
+    },
+
+    {
+        "id": "TC_400",
+        "action": "validate_request",
+        "url_pattern": "resources/.*\\.xml",
+        "method": "GET",
+        "description": "resource.xml: Verify method is GET"
+    },
+    {
+        "id": "TC_401",
+        "action": "validate_response",
+        "url_pattern": "resources/.*\\.xml",
+        "expected_status": 200,
+        "description": "resource.xml: Verify response 200 OK"
+    },
+    {
+        "id": "TC_402",
+        "action": "validate_response",
+        "url_pattern": "resources/.*\\.xml",
+        "body_pattern": "IS_DELETED.*false",
+        "validation_type": "regex",
+        "description": "resource.xml: Verify agent is not deleted"
+    },
+    {
+        "id": "TC_403",
+        "action": "validate_response",
+        "url_pattern": "resources/.*\\.xml",
+        "body_pattern": "RESOURCE_ID",
+        "validation_type": "contains",
+        "description": "resource.xml: Verify RESOURCE_ID present in response"
+    },
+
+    {
+        "id": "TC_500",
+        "action": "validate_request",
+        "url_pattern": "log-upload-settings\\.json",
+        "method": "GET",
+        "description": "log-upload-settings: Verify method is GET"
+    },
+    {
+        "id": "TC_501",
+        "action": "validate_response",
+        "url_pattern": "log-upload-settings\\.json",
+        "expected_status": 200,
+        "description": "log-upload-settings: Verify response 200 OK"
+    },
+    {
+        "id": "TC_502",
+        "action": "validate_response",
+        "url_pattern": "log-upload-settings\\.json",
+        "header_name": "Content-Type",
+        "expected_value": "application/json",
+        "validation_type": "exact",
+        "description": "log-upload-settings: Verify Content-Type is JSON"
+    },
+    {
+        "id": "TC_503",
+        "action": "validate_response",
+        "url_pattern": "log-upload-settings\\.json",
+        "body_pattern": "validLogFileFormats",
+        "validation_type": "contains",
+        "description": "log-upload-settings: Verify body has validLogFileFormats"
+    },
+
+    {
+        "id": "TC_600",
+        "action": "validate_response",
+        "url_pattern": "customer-meta-data\\.json",
+        "expected_status": 200,
+        "description": "customer-meta-data: Verify response 200 OK"
+    },
+    {
+        "id": "TC_601",
+        "action": "validate_response",
+        "url_pattern": "customer-meta-data\\.json",
+        "body_pattern": "customermetadataparams",
+        "validation_type": "contains",
+        "description": "customer-meta-data: Verify body has customermetadataparams"
+    },
+
+    {
+        "id": "TC_700",
+        "action": "validate_response",
+        "url_pattern": "dlp-globalsetting\\.json",
+        "expected_status": 200,
+        "description": "dlp-globalsetting: Verify response 200 OK"
+    },
+    {
+        "id": "TC_701",
+        "action": "validate_response",
+        "url_pattern": "dlp-globalsetting\\.json",
+        "body_pattern": "labelInfo",
+        "validation_type": "contains",
+        "description": "dlp-globalsetting: Verify body has labelInfo"
+    },
+
+    {
+        "id": "TC_800",
+        "action": "validate_response",
+        "url_pattern": "agent-settings\\.xml",
+        "expected_status": 200,
+        "description": "agent-settings: Verify response 200 OK"
+    },
+    {
+        "id": "TC_801",
+        "action": "validate_response",
+        "url_pattern": "agent-settings\\.xml",
+        "header_name": "Content-Type",
+        "expected_value": "application/xml",
+        "validation_type": "exact",
+        "description": "agent-settings: Verify Content-Type is XML"
+    },
+    {
+        "id": "TC_802",
+        "action": "validate_response",
+        "url_pattern": "agent-settings\\.xml",
+        "body_pattern": "AgentProtectionSettings",
+        "validation_type": "contains",
+        "description": "agent-settings: Verify body has AgentProtectionSettings"
+    },
+
+    {
+        "id": "TC_900",
+        "action": "validate_response",
+        "url_pattern": "agent-security-setting\\.json",
+        "expected_status": 200,
+        "description": "agent-security-setting: Verify response 200 OK"
+    },
+    {
+        "id": "TC_901",
+        "action": "validate_response",
+        "url_pattern": "agent-security-setting\\.json",
+        "body_pattern": "SECRET_KEY",
+        "validation_type": "contains",
+        "description": "agent-security-setting: Verify body has SECRET_KEY"
+    },
+
+    {
+        "id": "TC_1000",
+        "action": "validate_response",
+        "url_pattern": "edr-meta-data\\.json",
+        "expected_status": 200,
+        "description": "edr-meta-data: Verify response 200 OK"
+    },
+    {
+        "id": "TC_1001",
+        "action": "validate_response",
+        "url_pattern": "edr-meta-data\\.json",
+        "body_pattern": "EDRGlobalMeta",
+        "validation_type": "contains",
+        "description": "edr-meta-data: Verify body has EDRGlobalMeta"
+    },
+
+    {
+        "id": "TC_1100",
+        "action": "validate_request",
+        "url_pattern": "agentcrashreport",
+        "method": "POST",
+        "description": "agentcrashreport: Verify method is POST"
+    },
+    {
+        "id": "TC_1101",
+        "action": "validate_request",
+        "url_pattern": "agentcrashreport",
+        "body_pattern": "CRU_REPORT",
+        "validation_type": "contains",
+        "description": "agentcrashreport: Verify body has CRU_REPORT"
+    },
+    {
+        "id": "TC_1102",
+        "action": "validate_request",
+        "url_pattern": "agentcrashreport",
+        "body_pattern": "AGENT_VERSION",
+        "validation_type": "contains",
+        "description": "agentcrashreport: Verify body has AGENT_VERSION"
+    },
+    {
+        "id": "TC_1103",
+        "action": "validate_response",
+        "url_pattern": "agentcrashreport",
+        "expected_status": 200,
+        "description": "agentcrashreport: Verify response 200 OK"
+    },
+    {
+        "id": "TC_1104",
+        "action": "validate_response",
+        "url_pattern": "agentcrashreport",
+        "body_pattern": "success",
+        "validation_type": "contains",
+        "description": "agentcrashreport: Verify response body is 'success'"
+    },
+
+    {
+        "id": "TC_1200",
+        "action": "validate_request",
+        "url_pattern": "appctrl-new-storeapp-scan-data",
+        "method": "POST",
+        "description": "appctrl store apps: Verify method is POST"
+    },
+    {
+        "id": "TC_1201",
+        "action": "validate_request",
+        "url_pattern": "appctrl-new-storeapp-scan-data",
+        "body_pattern": "\"ASA\"",
+        "validation_type": "contains",
+        "description": "appctrl store apps: Verify body has ASA array"
+    },
+    {
+        "id": "TC_1202",
+        "action": "validate_response",
+        "url_pattern": "appctrl-new-storeapp-scan-data",
+        "expected_status": 200,
+        "description": "appctrl store apps: Verify response 200 OK"
+    },
+
+    {
+        "id": "TC_1300",
+        "action": "validate_request",
+        "url_pattern": "appctrl-new-installedapps-data",
+        "method": "POST",
+        "description": "appctrl installed apps: Verify method is POST"
+    },
+    {
+        "id": "TC_1301",
+        "action": "validate_request",
+        "url_pattern": "appctrl-new-installedapps-data",
+        "body_pattern": "\"AIA\"",
+        "validation_type": "contains",
+        "description": "appctrl installed apps: Verify body has AIA array"
+    },
+    {
+        "id": "TC_1302",
+        "action": "validate_response",
+        "url_pattern": "appctrl-new-installedapps-data",
+        "expected_status": 200,
+        "description": "appctrl installed apps: Verify response 200 OK"
+    },
+
+    {
+        "id": "TC_1400",
+        "action": "validate_request",
+        "url_pattern": "discovery-and-remediation-data",
+        "method": "POST",
+        "description": "appctrl discovery: Verify method is POST"
+    },
+    {
+        "id": "TC_1401",
+        "action": "validate_request",
+        "url_pattern": "discovery-and-remediation-data",
+        "body_pattern": "\"AU\"",
+        "validation_type": "contains",
+        "description": "appctrl discovery: Verify body has AU (user) array"
+    },
+    {
+        "id": "TC_1402",
+        "action": "validate_response",
+        "url_pattern": "discovery-and-remediation-data",
+        "expected_status": 200,
+        "description": "appctrl discovery: Verify response 200 OK"
+    },
+
+    {
+        "id": "TC_1500",
+        "action": "validate_response",
+        "url_pattern": "boundary-list\\.xml",
+        "expected_status": 404,
+        "continueOnFailure": true,
+        "description": "boundary-list.xml: Verify 404 (expected not found)"
+    },
+    {
+        "id": "TC_1501",
+        "action": "validate_response",
+        "url_pattern": "acp-global-settings\\.json",
+        "expected_status": 404,
+        "continueOnFailure": true,
+        "description": "acp-global-settings: Verify 404 (expected not found)"
+    },
+
+    {
+        "id": "TC_1600",
+        "action": "assert_request_count",
+        "url_pattern": "agentSlot",
+        "min_count": 1,
+        "description": "Count: At least 1 agentSlot request"
+    },
+    {
+        "id": "TC_1601",
+        "action": "assert_request_count",
+        "url_pattern": "meta-data\\.xml",
+        "min_count": 1,
+        "description": "Count: At least 1 meta-data.xml request"
+    },
+    {
+        "id": "TC_1602",
+        "action": "assert_request_count",
+        "url_pattern": "applicationcontrol",
+        "min_count": 1,
+        "description": "Count: At least 1 applicationcontrol request"
+    },
+    {
+        "id": "TC_1603",
+        "action": "assert_request_count",
+        "url_pattern": "endpointdlp",
+        "min_count": 1,
+        "description": "Count: At least 1 endpointdlp request"
+    },
+
+    {
+        "id": "TC_1700",
+        "action": "assert_request_order",
+        "expected_order": [
+            "agentSlot",
+            "meta-data\\.xml",
+            "agent-settings\\.xml"
+        ],
+        "continueOnFailure": true,
+        "description": "Order: agentSlot -> meta-data.xml -> agent-settings.xml"
+    },
+
+    {"id": "TC_1800", "action": "capture_traffic", "capture_file": "Reports/validated-traffic.json",
+     "continueOnFailure": true, "description": "Dump validated traffic"},
+
+    {"id": "CLEANUP_001", "action": "run_command",
+     "command_line": "netsh advfirewall firewall delete rule name=\"BlockUEMSDirectServer\"",
+     "continueOnFailure": true, "description": "Remove firewall rule"},
+    {"id": "CLEANUP_002", "action": "run_command",
+     "command_line": "netsh interface portproxy delete v4tov4 listenport=8383 listenaddress=127.0.0.1",
+     "continueOnFailure": true, "description": "Remove port proxy"},
+    {"id": "CLEANUP_003", "action": "run_command",
+     "command_line": "powershell -Command \"(Get-Content 'C:\\Windows\\System32\\drivers\\etc\\hosts') | Where-Object { $_ -notmatch '127\\.0\\.0\\.1 prathosh-w22-11' } | Set-Content 'C:\\Windows\\System32\\drivers\\etc\\hosts'\"",
+     "continueOnFailure": true, "description": "Remove hosts entry"},
+    {"id": "CLEANUP_004", "action": "run_command", "command_line": "ipconfig /flushdns",
+     "continueOnFailure": true, "description": "Flush DNS"},
+    {"id": "CLEANUP_005", "action": "patch_registry",
+     "registry_key": "HKLM\\SOFTWARE\\WOW6432Node\\AdventNet\\DesktopCentral\\DCAgent\\ServerInfo",
+     "registry_action": "restore", "continueOnFailure": true, "description": "Restore registry"},
+    {"id": "CLEANUP_006", "action": "run_command",
+     "command_line": "\"C:\\Program Files (x86)\\ManageEngine\\UEMS_Agent\\bin\\cfgupdate.exe\"",
+     "timeout": 30, "continueOnFailure": true, "description": "Restore agent config"},
+    {"id": "CLEANUP_007", "action": "stop_proxy", "description": "Stop proxy"}
+]

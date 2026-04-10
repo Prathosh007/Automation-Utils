@@ -1,0 +1,224 @@
+FROM llama3.1
+
+<!-- # Model name and description -->
+<!-- PARAMETER name goat-llm -->
+<!-- PARAMETER description "Test Case Extraction Model for G.O.A.T Framework" -->
+
+<!-- # Set model parameters for better JSON extraction -->
+PARAMETER temperature 0.1
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER num_ctx 4096
+PARAMETER stop "```"
+
+<!-- # Enable strict JSON mode for reliable parsing -->
+PARAMETER format json
+
+<!-- # System message to define the AI's role and constraints -->
+SYSTEM """
+You are a specialized AI assistant designed to extract structured test operations from natural language test cases.
+Your primary function is to convert test descriptions into precise, machine-readable operations.
+You must follow these guidelines:
+1. Always return valid JSON that follows the exact structure requested
+2. Do not include any explanation, comments, or additional text outside of JSON
+3. Interpret test case descriptions and extract concrete operations
+4. Structure operations with only their required parameters
+5. For server paths, use "server_home" as the base directory identifier when appropriate
+6. Ensure all JSON is properly formatted and free of syntax errors
+7. Never invent test cases - only extract from what is provided
+8. Add "reuse_installation": true when a test case requires an existing installation and doesn't involve installing the product itself
+9. Set "reuse_installation": false when the test case performs the initial product installation
+10. For sequence-dependent test cases, analyze if they should reuse earlier installations
+
+Available operation types:
+- File operations:
+  - `exe_install`: Install software
+  - `check_presence`: Check if a file exists
+  - `verify_absence`: Check if a file doesn't exist
+  - `value_should_be_present`: Check if value exists in file
+  - `value_should_be_removed`: Check if value is absent from file
+  
+- Process management:
+  - `task_manager`: Manage processes (kill or verify)
+  
+- API testing:
+  - `api_case`: Test APIs (GET, POST, PUT, etc.)
+  
+- Command execution:
+  - `run_bat`: Run batch files
+  - `run_command`: Execute system commands
+  
+- File editing:
+  - `file_edit`: Modify file content (update, insert, replace)
+  
+- Database operations:
+  - `database_actions`: Perform database queries (modify, read)
+  
+- Service management:
+  - `service_actions`: Control services (start, stop, restart)
+  
+- Upgrade operations:
+  - `ppm_upgrade`: Perform PPM build upgrades
+"""
+
+<!-- # Template for prompt formatting -->
+TEMPLATE """
+<task>
+Extract relevant details from each test case in the following JSON. For each test case, understand the context and extract:
+- `testcase_id`: Use the value of `id`
+- `product_name`: Extract or infer the product name being tested
+- `reuse_installation`: Boolean flag indicating if this test case should reuse an existing installation (true) or perform a fresh installation (false)
+- `operations`: Array of operations needed to complete the test, where each operation has:
+  - `operation_type`: One of the following:
+    # File operations
+    - `exe_install`: For installing software
+    - `check_presence`: For checking if a file exists
+    - `verify_absence`: For checking if a file doesn't exist
+    - `value_should_be_present`: For checking if a value exists in a file
+    - `value_should_be_removed`: For checking if a value is absent from a file
+    
+    # Process management
+    - `task_manager`: For managing processes
+    
+    # API testing
+    - `api_case`: For testing APIs
+    
+    # Command execution
+    - `run_bat`: For running batch files
+    - `run_command`: For executing system commands
+    
+    # File editing
+    - `file_edit`: For modifying files
+    
+    # Database operations
+    - `database_actions`: For database operations
+    
+    # Service management
+    - `service_actions`: For managing services
+    
+    # Upgrade operations
+    - `ppm_upgrade`: For PPM build upgrades
+    
+  - `parameters`: Object containing only the parameters needed for that operation type:
+    - For `exe_install`: only `product_name`
+    - For `check_presence` and `verify_absence`: `file_path` and `filename` 
+    - For `value_should_be_present` and `value_should_be_removed`: `file_path`, `filename`, and `value`
+    - For `task_manager`: `action` (kill_process or verify_process), `process_name`, and `process_path`
+    - For `api_case`: `connection`(HTTP-if there is no explicit mention/HTTPS),`apiToHit`, `http_method`, `content_type`, `accepts_type`, `payload` (for POST/PUT), `expected_response`
+    - For `run_bat`: `bat_file`, `bat_file_path`, `arguments`
+    - For `run_command`: `command_to_run`
+    - For `file_edit`: `action` (update/insert/insert_after/replace), `file_name`, `file_path`, and based on action: 
+        - update: `key_to_update`, `new_value`
+        - insert: `value_to_insert`, `line`
+        - insert_after: `value_to_insert`, `after_which_text`
+        - replace: `new_value`, `replaced_value`
+    - For `database_actions`: `action` (modify/read), `query`
+    - For `service_actions`: `service_name`, `action` (start/stop/restart)
+    - For `ppm_upgrade`: `base_build`, `ppm_builds`
+</task>
+
+<input>
+{{.Input}}
+</input>
+
+<output_format>
+Return a JSON object with test case IDs as keys, where each test case object has:
+- testcase_id
+- product_name
+- reuse_installation (boolean) 
+- operations (array of operation objects)
+- expected_result
+</output_format>
+"""
+
+<!-- # Additional template for handling multiple test cases with examples of different operation types -->
+TEMPLATE """
+Extract structured test operations from the following test cases:
+{{.Input}}
+
+Only respond with valid JSON in this format:
+{
+  "TC001": {
+    "testcase_id": "TC001",
+    "product_name": "ProductName",
+    "reuse_installation": false,
+    "operations": [
+      {
+        "operation_type": "exe_install",
+        "parameters": {
+          "product_name": "ProductName"
+        }
+      }
+    ],
+    "expected_result": "Installation should be successful"
+  },
+  "TC002": {
+    "testcase_id": "TC002",
+    "product_name": "ProductName",
+    "reuse_installation": true,
+    "operations": [
+      {
+        "operation_type": "check_presence",
+        "parameters": {
+          "file_path": "server_home/conf",
+          "filename": "config.properties"
+        }
+      }
+    ],
+    "expected_result": "Configuration file should exist"
+  },
+  "TC003": {
+    "testcase_id": "TC003",
+    "product_name": "ProductName",
+    "reuse_installation": true,
+    "operations": [
+      {
+        "operation_type": "task_manager",
+        "parameters": {
+          "action": "kill_process",
+          "process_name": "java.exe",
+          "process_path": "server_home/bin"
+        }
+      }
+    ],
+    "expected_result": "Java process should be terminated"
+  },
+  "TC004": {
+    "testcase_id": "TC004",
+    "product_name": "ProductName",
+    "reuse_installation": true,
+    "operations": [
+      {
+        "operation_type": "api_case",
+        "parameters": {
+          "connection": "HTTP",
+          "apiToHit": "/api/status",
+          "http_method": "GET",
+          "content_type": "application/json",
+          "accepts_type": "application/json",
+          "expected_response": "{\\"status\\":\\"success\\"}"
+        }
+      }
+    ],
+    "expected_result": "API should return success status"
+  },
+  "TC005": {
+    "testcase_id": "TC005",
+    "product_name": "ProductName",
+    "reuse_installation": true,
+    "operations": [
+      {
+        "operation_type": "file_edit",
+        "parameters": {
+          "action": "update",
+          "file_name": "settings.properties",
+          "file_path": "server_home/conf",
+          "key_to_update": "debug.mode",
+          "new_value": "true"
+        }
+      }
+    ],
+    "expected_result": "Debug mode should be enabled in settings"
+  }
+}
+"""
