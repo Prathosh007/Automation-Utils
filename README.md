@@ -37,15 +37,62 @@
 
 ## Overview
 
-This repository provides a **multi-language automation toolkit** for testing UEMS (Unified Endpoint Management & Security) Agent communication. It covers the full testing lifecycle:
+### The Core Idea
 
-| Capability | Component | Language |
-|-----------|-----------|----------|
-| HTTPS traffic interception & validation | CommunicationAutomation | Python |
-| Windows GUI automation & UI testing | Agent GUI Utils | C# (.NET 8) |
-| Windows Registry read/write/patch | Registry Automation | C++ (Win32) |
-| Test orchestration, execution & reporting | G.O.A.T Server | Java (Spring Boot) |
-| Interactive API exploration | API Explorer | HTML/CSS/JS |
+> **Write test cases in plain language → Convert to JSON → Every util executes automatically.**
+
+This framework treats **JSON as a universal automation layer**. Instead of writing scripts for each test scenario, you describe *what* to test in a simple JSON file — and the engine figures out *how* to execute it by dispatching to the right utility.
+
+```
+┌─────────────────────┐       ┌──────────────────┐       ┌─────────────────────────┐
+│  Natural Language    │       │   JSON Test       │       │   Automation Engine      │
+│  Test Case           │──────▶│   Definition      │──────▶│   (picks the right util) │
+│                      │       │                   │       │                           │
+│  "Verify agent       │       │  { "action":      │       │   ✓ start_proxy           │
+│   connects to server │       │    "validate_     │       │   ✓ validate_request      │
+│   with auth header"  │       │    request",      │       │   ✓ assert_request_count  │
+│                      │       │    "url_pattern": │       │   ✓ capture_traffic       │
+│                      │       │    "agentSlot",   │       │   ✓ readgrid (GUI)        │
+│                      │       │    "header_name": │       │   ✓ registry_operation    │
+│                      │       │    "Authorization"│       │   ✓ ... 180+ more utils   │
+│                      │       │  }                │       │                           │
+└─────────────────────┘       └──────────────────┘       └─────────────────────────┘
+```
+
+### How It Works
+
+1. **Describe** your test case — what to install, what to click, what traffic to validate
+2. **Write JSON** — each step is a command with an `action` and its parameters
+3. **Run** — the engine reads the JSON, dispatches each step to the correct utility (Python/C#/C++/Java), and collects results
+4. **Every util is JSON-triggered** — no manual scripting needed per test case
+
+```json
+[
+    {"action": "exe_install",          "comment": "Install the agent"},
+    {"action": "start_proxy",          "comment": "Start traffic interception"},
+    {"action": "wait_for_request",     "comment": "Wait for agent check-in"},
+    {"action": "validate_request",     "comment": "Verify auth header is correct"},
+    {"action": "readgrid",             "comment": "Read agent status from GUI table"},
+    {"action": "registry_operation",   "comment": "Verify registry keys were written"},
+    {"action": "capture_traffic",      "comment": "Save all captured traffic"},
+    {"action": "stop_proxy",           "comment": "Cleanup"}
+]
+```
+
+> **One JSON file** can orchestrate Python proxy utils, C# GUI utils, C++ registry utils, and Java operation handlers — all in a single test flow.
+
+### What This Repo Provides
+
+This is a **multi-language automation toolkit** with **191 utilities** for testing UEMS (Unified Endpoint Management & Security) Agents. It covers the full testing lifecycle:
+
+| Capability | Component | Language | Triggered Via |
+|-----------|-----------|----------|---------------|
+| HTTPS traffic interception & validation | CommunicationAutomation | Python | JSON commands |
+| Windows GUI automation & UI testing | Agent GUI Utils | C# (.NET 8) | JSON commands |
+| Windows Registry read/write/patch | Registry Automation | C++ (Win32) | JSON commands |
+| Test orchestration, execution & reporting | G.O.A.T Server | Java (Spring Boot) | JSON test cases |
+| AI-assisted test analysis | LLM Integration | Java + Ollama | JSON input/output |
+| Interactive API exploration | API Explorer | HTML/CSS/JS | REST API |
 
 All components share a common design: **JSON-driven test definitions** processed by a registry-based action engine.
 
