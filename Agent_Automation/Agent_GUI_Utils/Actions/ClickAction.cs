@@ -77,13 +77,24 @@ namespace GuiAgentUtils.Actions
                 // Method 1: Try Invoke Pattern (most reliable for buttons)
                 clicked = TryInvokePattern(element);
 
-                // Method 2: Standard FlaUI Click
+                // Method 2: UIA pattern fallbacks (SelectionItem / LegacyIAccessible /
+                // ExpandCollapse). These go through UIA, which crosses process integrity
+                // boundaries — unlike SendInput, they keep working when the target window
+                // is elevated or not in the foreground (the "Access is denied" case).
+                // Required for WPF list/tree items (e.g. TextBlock inside a TreeViewItem)
+                // that do not support Invoke and have no native HWND.
+                if (!clicked)
+                {
+                    clicked = TryUiaPatternFallbacks(element);
+                }
+
+                // Method 3: Standard FlaUI Click
                 if (!clicked)
                 {
                     clicked = TryStandardClick(element);
                 }
 
-                // Method 3: Coordinate-based click
+                // Method 4: Coordinate-based click (last resort; fails under UIPI/elevation)
                 if (!clicked)
                 {
                     clicked = TryCoordinateClick(element);
@@ -292,6 +303,85 @@ namespace GuiAgentUtils.Actions
                 Logger?.LogToFile($"Coordinate click failed: {ex.Message}");
             }
 
+            return false;
+        }
+
+        /// <summary>
+        /// Activate an element using UIA control patterns instead of synthetic input.
+        /// UIA calls cross process-integrity boundaries, so they succeed where SendInput
+        /// gets "Access is denied" (elevated target / window not in foreground).
+        /// Walks up from the target element to find an ancestor that supports a pattern,
+        /// because in WPF the named element (e.g. a TextBlock with AutomationId 'dtcb')
+        /// is often a child of the actionable item (e.g. a TreeViewItem).
+        ///
+        /// IMPORTANT: each pattern attempt has its own try-catch so that a failure on one
+        /// (e.g. SelectionItem throwing "invalid state") does not prevent the others from
+        /// being tried — the outer catch would have silently skipped LegacyIAccessible,
+        /// ancestor Invoke, and all parent ancestors.
+        /// </summary>
+        private bool TryUiaPatternFallbacks(AutomationElement element)
+        {
+            Logger?.LogToFile("Attempting UIA pattern fallbacks (SelectionItem/LegacyIAccessible/Invoke on ancestors)...");
+
+            var current = element;
+            for (int depth = 0; depth < 5 && current != null; depth++)
+            {
+                // SelectionItemPattern: selects a list/tree/tab item (the standard way to
+                // "click" a navigation tree node without synthetic input).
+                try
+                {
+                    var selectionItem = current.Patterns.SelectionItem;
+                    if (selectionItem.IsSupported)
+                    {
+                        ExecuteWithSuppressedOutput(() => selectionItem.Pattern.Select());
+                        Wait.UntilInputIsProcessed();
+                        Logger?.LogToFile($"SelectionItem.Select succeeded (depth {depth}: {current.ControlType})");
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogToFile($"SelectionItem.Select failed at depth {depth}: {ex.Message}");
+                }
+
+                // LegacyIAccessiblePattern: fires the element's default MSAA action.
+                try
+                {
+                    var legacy = current.Patterns.LegacyIAccessible;
+                    if (legacy.IsSupported)
+                    {
+                        ExecuteWithSuppressedOutput(() => legacy.Pattern.DoDefaultAction());
+                        Wait.UntilInputIsProcessed();
+                        Logger?.LogToFile($"LegacyIAccessible.DoDefaultAction succeeded (depth {depth}: {current.ControlType})");
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogToFile($"LegacyIAccessible.DoDefaultAction failed at depth {depth}: {ex.Message}");
+                }
+
+                // Some WPF ancestors expose Invoke even when the named leaf does not.
+                try
+                {
+                    var invoke = current.Patterns.Invoke;
+                    if (invoke.IsSupported)
+                    {
+                        ExecuteWithSuppressedOutput(() => invoke.Pattern.Invoke());
+                        Wait.UntilInputIsProcessed();
+                        Logger?.LogToFile($"Ancestor Invoke succeeded (depth {depth}: {current.ControlType})");
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogToFile($"Ancestor Invoke failed at depth {depth}: {ex.Message}");
+                }
+
+                current = current.Parent;
+            }
+
+            Logger?.LogToFile("No usable UIA pattern found on element or ancestors");
             return false;
         }
 
