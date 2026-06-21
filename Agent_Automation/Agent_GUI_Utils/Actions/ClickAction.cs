@@ -313,39 +313,57 @@ namespace GuiAgentUtils.Actions
         /// Walks up from the target element to find an ancestor that supports a pattern,
         /// because in WPF the named element (e.g. a TextBlock with AutomationId 'dtcb')
         /// is often a child of the actionable item (e.g. a TreeViewItem).
+        ///
+        /// IMPORTANT: each pattern attempt has its own try-catch so that a failure on one
+        /// (e.g. SelectionItem throwing "invalid state") does not prevent the others from
+        /// being tried — the outer catch would have silently skipped LegacyIAccessible,
+        /// ancestor Invoke, and all parent ancestors.
         /// </summary>
         private bool TryUiaPatternFallbacks(AutomationElement element)
         {
-            try
-            {
-                Logger?.LogToFile("Attempting UIA pattern fallbacks (SelectionItem/LegacyIAccessible/ExpandCollapse)...");
+            Logger?.LogToFile("Attempting UIA pattern fallbacks (SelectionItem/LegacyIAccessible/Invoke on ancestors)...");
 
-                // Search the element and up to a few ancestors for a usable pattern.
-                var current = element;
-                for (int depth = 0; depth < 5 && current != null; depth++)
+            var current = element;
+            for (int depth = 0; depth < 5 && current != null; depth++)
+            {
+                // SelectionItemPattern: selects a list/tree/tab item (the standard way to
+                // "click" a navigation tree node without synthetic input).
+                try
                 {
-                    // SelectionItemPattern: selects a list/tree/tab item (the usual way to
-                    // "click" a navigation tree node).
                     var selectionItem = current.Patterns.SelectionItem;
                     if (selectionItem.IsSupported)
                     {
                         ExecuteWithSuppressedOutput(() => selectionItem.Pattern.Select());
                         Wait.UntilInputIsProcessed();
-                        Logger?.LogToFile($"SelectionItem.Select succeeded (ancestor depth {depth}: {current.ControlType})");
+                        Logger?.LogToFile($"SelectionItem.Select succeeded (depth {depth}: {current.ControlType})");
                         return true;
                     }
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogToFile($"SelectionItem.Select failed at depth {depth}: {ex.Message}");
+                }
 
-                    // LegacyIAccessiblePattern: invokes the control's default MSAA action.
+                // LegacyIAccessiblePattern: fires the element's default MSAA action.
+                try
+                {
                     var legacy = current.Patterns.LegacyIAccessible;
                     if (legacy.IsSupported)
                     {
                         ExecuteWithSuppressedOutput(() => legacy.Pattern.DoDefaultAction());
                         Wait.UntilInputIsProcessed();
-                        Logger?.LogToFile($"LegacyIAccessible.DoDefaultAction succeeded (ancestor depth {depth}: {current.ControlType})");
+                        Logger?.LogToFile($"LegacyIAccessible.DoDefaultAction succeeded (depth {depth}: {current.ControlType})");
                         return true;
                     }
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogToFile($"LegacyIAccessible.DoDefaultAction failed at depth {depth}: {ex.Message}");
+                }
 
-                    // Some ancestors support Invoke even when the named child does not.
+                // Some WPF ancestors expose Invoke even when the named leaf does not.
+                try
+                {
                     var invoke = current.Patterns.Invoke;
                     if (invoke.IsSupported)
                     {
@@ -354,17 +372,16 @@ namespace GuiAgentUtils.Actions
                         Logger?.LogToFile($"Ancestor Invoke succeeded (depth {depth}: {current.ControlType})");
                         return true;
                     }
-
-                    current = current.Parent;
+                }
+                catch (Exception ex)
+                {
+                    Logger?.LogToFile($"Ancestor Invoke failed at depth {depth}: {ex.Message}");
                 }
 
-                Logger?.LogToFile("No usable UIA pattern found on element or ancestors");
-            }
-            catch (Exception ex)
-            {
-                Logger?.LogToFile($"UIA pattern fallback failed: {ex.Message}");
+                current = current.Parent;
             }
 
+            Logger?.LogToFile("No usable UIA pattern found on element or ancestors");
             return false;
         }
 
