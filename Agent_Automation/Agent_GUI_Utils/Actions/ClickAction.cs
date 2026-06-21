@@ -89,6 +89,13 @@ namespace GuiAgentUtils.Actions
                     clicked = TryCoordinateClick(element);
                 }
 
+                // Method 4: Win32 PostMessage fallback — works even when window is not in foreground
+                // (bypasses SendInput/UIPI restrictions that cause "Access is denied" on coordinate clicks)
+                if (!clicked)
+                {
+                    clicked = TryWin32PostMessageClick(element);
+                }
+
                 if (!clicked)
                 {
                     throw new InvalidOperationException("All click methods failed");
@@ -293,6 +300,40 @@ namespace GuiAgentUtils.Actions
             }
 
             return false;
+        }
+
+        private bool TryWin32PostMessageClick(AutomationElement element)
+        {
+            try
+            {
+                Logger?.LogToFile("Attempting Win32 PostMessage click (foreground-independent)...");
+
+                var nativeHandle = element.Properties.NativeWindowHandle.ValueOrDefault;
+                if (nativeHandle == IntPtr.Zero)
+                {
+                    Logger?.LogToFile("Win32 PostMessage: no native handle available");
+                    return false;
+                }
+
+                var className = element.Properties.ClassName.ValueOrDefault ?? "";
+
+                bool result = className == "Button"
+                    ? Win32ElementInfo.ClickButton(nativeHandle)
+                    : Win32ElementInfo.ClickControl(nativeHandle);
+
+                if (result)
+                {
+                    Wait.UntilInputIsProcessed();
+                    Logger?.LogToFile("Win32 PostMessage click succeeded");
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogToFile($"Win32 PostMessage click failed: {ex.Message}");
+                return false;
+            }
         }
 
         public override bool ValidateCommand(Command command)
